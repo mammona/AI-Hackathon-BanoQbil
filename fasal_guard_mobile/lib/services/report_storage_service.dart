@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/farmer_report.dart';
+import 'script_normalizer.dart';
 
 /// Local report persistence. Every completed report lives in its own
 /// folder containing ONLY the JSON report and the crop image:
@@ -16,7 +17,7 @@ import '../models/farmer_report.dart';
 /// └── crop_image.jpg
 /// ```
 ///
-/// Farmer answers are transcribed locally by Sherpa ONNX and never stored
+/// Farmer answers are transcribed by Groq-hosted Whisper and never stored
 /// as audio. JSON reports stay local in this prototype; only the crop
 /// image + text metadata are synced (see UploadQueueService).
 class ReportStorageService {
@@ -85,14 +86,30 @@ class ReportStorageService {
       final file = File('${entry.path}/report.json');
       if (!await file.exists()) continue;
       try {
-        final json = jsonDecode(await file.readAsString());
-        reports.add(FarmerReport.fromJson(json as Map<String, dynamic>));
+        final json =
+            jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+        _normalizeAnswerScripts(json);
+        reports.add(FarmerReport.fromJson(json));
       } catch (e) {
         debugPrint('[report] skipping broken report ${entry.path}: $e');
       }
     }
     reports.sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
     return reports;
+  }
+
+  /// Reports saved before Shahmukhi normalization keep the raw ASR script
+  /// (Gurmukhi/Devanagari) on disk; convert on read so history always
+  /// shows Urdu script.
+  void _normalizeAnswerScripts(Map<String, dynamic> json) {
+    final answers = json['question_answers'];
+    if (answers is! List) return;
+    for (final answer in answers) {
+      if (answer is Map<String, dynamic> && answer['answer_text'] is String) {
+        answer['answer_text'] =
+            ScriptNormalizer.toShahmukhi(answer['answer_text'] as String);
+      }
+    }
   }
 
   /// Removes the whole report folder (json + image).

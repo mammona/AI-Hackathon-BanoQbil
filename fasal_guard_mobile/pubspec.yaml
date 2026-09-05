@@ -40,14 +40,10 @@ dependencies:
   record: ^6.1.0
   path_provider: ^2.1.4
   geolocator: ^13.0.2
-  # Offline speech-to-text (Sherpa ONNX + Omnilingual ASR 300M INT8,
-  # Urdu / Punjabi-Shahmukhi). Model files are NOT bundled in the APK;
-  # they are downloaded once into app storage (see asr_model_service.dart).
-  sherpa_onnx: ^1.13.6
-  shared_preferences: ^2.3.0
-  uuid: ^4.5.1
-  hive_ce: ^2.7.0
-  hive_ce_flutter: ^2.1.0
+  # Cloud speech-to-text: Groq-hosted OpenAI Whisper large-v3.
+  # The API key lives in .env (gitignored), loaded at startup.
+  flutter_dotenv: ^5.2.1
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -73,10 +69,8 @@ flutter:
     - assets/images/crops/
     - assets/images/test/
     - assets/audio/
-    # Offline Sherpa ONNX ASR model (~365 MB) bundled in the APK so the
-    # app works offline from the very first launch. AsrModelService
-    # unpacks it into app storage on first use (download kept as fallback).
-    - assets/asr_model/
+    # Groq API key for Whisper speech-to-text (gitignored, local only).
+    - .env
     # TFLite model assets moved to backup/mobile_tflite_inference/ (M9 later)
 
   # To add assets to your application, add an assets section, like this:

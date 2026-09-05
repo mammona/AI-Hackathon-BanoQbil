@@ -1,8 +1,8 @@
 import 'package:record/record.dart';
 
 /// Records the farmer's short Punjabi/Urdu audio answers.
-/// 16 kHz mono PCM/WAV — the preferred input format of the offline
-/// Sherpa ONNX recognizer.
+/// 16 kHz mono PCM/WAV — small to upload and natively supported by the
+/// Whisper transcription API.
 class RecorderService {
   final AudioRecorder _recorder = AudioRecorder();
 

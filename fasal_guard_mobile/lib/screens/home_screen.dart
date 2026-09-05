@@ -68,10 +68,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Animation<Offset> _slide(double start, double end) {
-    return Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(
+    return Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
+        .animate(
       CurvedAnimation(
         parent: _controller,
         curve: Interval(start, end, curve: Curves.easeOutCubic),
@@ -158,9 +156,8 @@ class _HomeScreenState extends State<HomeScreen>
                               'بیماری دی پہچان کرو',
                               'تے رپورٹ محفوظ کرو۔',
                             ],
-                            onTap: () =>
-                                Navigator.of(context)
-                                    .pushNamed(AppRoutes.cropSelection),
+                            onTap: () => Navigator.of(context)
+                                .pushNamed(AppRoutes.cropSelection),
                           ),
                         ),
                       ),
@@ -173,10 +170,12 @@ class _HomeScreenState extends State<HomeScreen>
                             icon: Icons.history_rounded,
                             title: 'پراݨیاں رپورٹاں',
                             iconSize: 51,
-                            lines: const ['محفوظ شدہ رپورٹاں ویکھو', 'تے سنو۔'],
-                            onTap: () =>
-                                Navigator.of(context)
-                                    .pushNamed(AppRoutes.reports),
+                            lines: const [
+                              'محفوظ شدہ رپورٹاں ویکھو',
+                              'تے سنو۔',
+                            ],
+                            onTap: () => Navigator.of(context)
+                                .pushNamed(AppRoutes.reports),
                           ),
                         ),
                       ),
@@ -253,20 +252,26 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
-          const Icon(Icons.eco_rounded, color: Color(0xFF268532), size: 43),
+          const Icon(
+            Icons.eco_rounded,
+            color: Color(0xFF268532),
+            size: 43,
+          ),
         ],
       ),
     );
   }
 
   /// Bottom navigation reused from the original chat UI, now wired to
-  /// Home / Alerts / Reports instead of Home / Chat.
+  /// Home / Reports instead of Home / Chat.
   Widget _buildBottomNavigation() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 9, 20, 13),
       decoration: const BoxDecoration(
         color: Color(0xFFFFFEFA),
-        border: Border(top: BorderSide(color: Color(0xFFE5E5DE))),
+        border: Border(
+          top: BorderSide(color: Color(0xFFE5E5DE)),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -280,23 +285,14 @@ class _HomeScreenState extends State<HomeScreen>
                 onTap: () {},
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _NavButton(
-                icon: Icons.notifications_rounded,
-                label: 'الرٹ',
-                selected: false,
-                onTap: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.notifications),
-              ),
-            ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 22),
             Expanded(
               child: _NavButton(
                 icon: Icons.history_rounded,
                 label: 'رپورٹاں',
                 selected: false,
-                onTap: () => Navigator.of(context).pushNamed(AppRoutes.reports),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.reports),
               ),
             ),
           ],
@@ -339,7 +335,8 @@ class _NavButton extends StatelessWidget {
                 style: TextStyle(
                   color: const Color(0xFF075B29),
                   fontSize: 13,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  fontWeight:
+                      selected ? FontWeight.w800 : FontWeight.w600,
                 ),
               ),
             ],

@@ -12,9 +12,6 @@ class ReportCompleteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Reflect the real sync outcome: 'synced' means the report already
-    // reached the backend; anything else is still queued for later.
-    final bool synced = report.syncStatus == 'synced';
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -48,54 +45,30 @@ class ReportCompleteScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  synced
-                      ? 'تہاڈی رپورٹ سرور تے کامیابی نال بھیج دتی گئی اے'
-                      : 'تہاڈی رپورٹ فون وچ محفوظ اے',
+                const Text(
+                  'تہاڈی رپورٹ فون وچ محفوظ اے',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF3C4A3E),
-                  ),
+                  style: TextStyle(fontSize: 16, color: Color(0xFF3C4A3E)),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                      horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: synced
-                        ? const Color(0xFFE3EED0)
-                        : const Color(0xFFFFF7E0),
+                    color: const Color(0xFFFFF7E0),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: synced
-                          ? const Color(0xFFB7D3A0)
-                          : const Color(0xFFEAD9A0),
-                    ),
+                    border: Border.all(color: const Color(0xFFEAD9A0)),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        synced
-                            ? Icons.cloud_done_rounded
-                            : Icons.cloud_off_rounded,
-                        size: 18,
-                        color: synced
-                            ? AppTheme.darkGreen
-                            : const Color(0xFF8A6D1A),
-                      ),
-                      const SizedBox(width: 8),
+                      Icon(Icons.cloud_off_rounded,
+                          size: 18, color: Color(0xFF8A6D1A)),
+                      SizedBox(width: 8),
                       Text(
-                        synced ? 'رپورٹ سرور تے پہنچ گئی اے' : 'جدوں انٹرنیٹ ملے گا تے سرور نوں بھیج دتی جاوے گی',
+                        'جدوں انٹرنیٹ ملے گا تے سرور نوں بھیج دتی جاوے گی',
                         style: TextStyle(
-                          fontSize: 13,
-                          color: synced
-                              ? AppTheme.darkGreen
-                              : const Color(0xFF8A6D1A),
-                        ),
+                            fontSize: 13, color: Color(0xFF8A6D1A)),
                       ),
                     ],
                   ),
@@ -111,9 +84,8 @@ class ReportCompleteScreen extends StatelessWidget {
                 SecondaryButton(
                   icon: Icons.home_rounded,
                   text: 'ہوم تے جاؤ',
-                  onTap: () =>
-                      Navigator.of(context)
-                          .popUntil(ModalRoute.withName(AppRoutes.home)),
+                  onTap: () => Navigator.of(context)
+                      .popUntil(ModalRoute.withName(AppRoutes.home)),
                 ),
               ],
             ),

@@ -36,6 +36,4 @@ class AppRoutes {
   static const questions = '/questions';
   static const complete = '/complete';
   static const reports = '/reports';
-  static const notifications = '/notifications';
-  static const notificationDetail = '/notification-detail';
 }

@@ -82,7 +82,10 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(16),
-                children: [for (final c in CropRegistry.crops) _card(c)],
+                children: [
+                  for (final c in CropRegistry.crops)
+                    if (c.enabled) _card(c)
+                ],
               ),
             ),
             Padding(

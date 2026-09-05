@@ -10,14 +10,11 @@ import '../config/question_bank.dart';
 import '../models/farmer_report.dart';
 import '../models/question_answer.dart';
 import '../services/audio_service.dart';
-import '../services/asr_model_service.dart';
-import '../services/device_service.dart';
 import '../services/location_service.dart';
 import '../services/recorder_service.dart';
-import '../services/report_api_service.dart';
 import '../services/report_session.dart';
 import '../services/report_storage_service.dart';
-import '../services/sherpa_stt_service.dart';
+import '../services/whisper_stt_service.dart';
 import '../services/upload_queue_service.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/app_top_bar.dart';
@@ -25,10 +22,10 @@ import '../widgets/app_top_bar.dart';
 /// Step 4 of the main flow: the Punjabi/Urdu audio question engine.
 ///
 /// Every question is asked by prerecorded audio; the farmer answers with
-/// a short recording. Each recording is transcribed LOCALLY by Sherpa ONNX
-/// (Omnilingual ASR 300M INT8, no internet needed); the returned text is
-/// stored in the report and the temporary audio file is deleted. On a
-/// transcription failure the temp audio is kept so the farmer can retry.
+/// a short recording. Each recording is transcribed by Groq-hosted
+/// Whisper large-v3 (needs internet); the returned text is stored in the
+/// report and the temporary audio file is deleted. On a transcription
+/// failure the temp audio is kept so the farmer can retry.
 class QuestionsScreen extends StatefulWidget {
   const QuestionsScreen({super.key});
 
@@ -50,10 +47,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   bool _saving = false;
   bool _transcribing = false;
 
-  /// One-time offline ASR model state (kept out of the APK).
-  _ModelState _modelState = _ModelState.checking;
-  double _modelProgress = 0;
-
   FarmerAudioQuestion get _question => _questions[_index];
 
   /// Temp path of the current answer. Deleted after a SUCCESSFUL
@@ -71,7 +64,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
     };
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _playPrompt();
-      _ensureModel();
     });
   }
 
@@ -94,39 +86,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   }
 
   // -------------------------------------------------------------
-  // One-time offline ASR model download (kept out of the APK)
-  // -------------------------------------------------------------
-
-  Future<void> _ensureModel() async {
-    setState(() {
-      _modelState = _ModelState.checking;
-      _modelProgress = 0;
-    });
-    try {
-      await AsrModelService.instance.ensureModel(
-        onProgress: (recv, total, _) {
-          if (!mounted) return;
-          setState(() {
-            _modelState = _ModelState.downloading;
-            _modelProgress = total > 0 ? recv / total : 0;
-          });
-        },
-      );
-      if (!mounted) return;
-      setState(() => _modelState = _ModelState.ready);
-      // Warm up the recognizer in the background so the first answer
-      // transcribes without an extra wait.
-      SherpaSttService.instance.ensureReady().catchError((Object e) {
-        debugPrint('[stt] model preload failed: $e');
-      });
-    } catch (e) {
-      debugPrint('[asr] model download failed: $e');
-      if (!mounted) return;
-      setState(() => _modelState = _ModelState.failed);
-    }
-  }
-
-  // -------------------------------------------------------------
   // Recording the farmer answer
   // -------------------------------------------------------------
 
@@ -137,15 +96,12 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text(
+        ..showSnackBar(const SnackBar(
+          content: Text(
               'مائیکروفون دی اجازت نہیں ملی۔ جواب ریکارڈ کرن لئی اجازت دیو تے دوبارہ کوشش کرو۔',
-              textAlign: TextAlign.center,
-            ),
-            backgroundColor: AppTheme.darkGreen,
-          ),
-        );
+              textAlign: TextAlign.center),
+          backgroundColor: AppTheme.darkGreen,
+        ));
       return;
     }
 
@@ -173,15 +129,11 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text(
-              'ریکارڈنگ شروع نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
-              textAlign: TextAlign.center,
-            ),
-            backgroundColor: AppTheme.darkGreen,
-          ),
-        );
+        ..showSnackBar(const SnackBar(
+          content: Text('ریکارڈنگ شروع نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
+              textAlign: TextAlign.center),
+          backgroundColor: AppTheme.darkGreen,
+        ));
     }
   }
 
@@ -197,15 +149,11 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
         setState(() => _recording = false);
         ScaffoldMessenger.of(context)
           ..clearSnackBars()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text(
-                'پہلاں تھوڑا جیہا بول کے ریکارڈ کرو۔',
-                textAlign: TextAlign.center,
-              ),
-              backgroundColor: AppTheme.darkGreen,
-            ),
-          );
+          ..showSnackBar(const SnackBar(
+            content: Text('پہلاں تھوڑا جیہا بول کے ریکارڈ کرو۔',
+                textAlign: TextAlign.center),
+            backgroundColor: AppTheme.darkGreen,
+          ));
         return;
       }
       setState(() {
@@ -241,7 +189,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   }
 
   /// Deletes the temporary answer file. Called ONLY after a successful
-  /// Sherpa transcription and whenever the farmer re-records. On a failed
+  /// Whisper transcription and whenever the farmer re-records. On a failed
   /// transcription the temp audio stays so the farmer can retry.
   Future<void> _discardTempAudio() async {
     _answerPlayer.stop();
@@ -256,10 +204,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
   }
 
   // -------------------------------------------------------------
-  // Offline Sherpa STT + navigation
+  // Whisper STT + navigation
   // -------------------------------------------------------------
 
-  /// Converts the recorded answer to text locally with Sherpa ONNX, stores
+  /// Converts the recorded answer to text with Groq-hosted Whisper, stores
   /// the text, then deletes the temp audio. On failure the temp audio is
   /// kept and the farmer can retry or re-record.
   Future<void> _next() async {
@@ -271,16 +219,11 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       return;
     }
 
-    if (_modelState != _ModelState.ready) {
-      await _ensureModel();
-      if (_modelState != _ModelState.ready) return;
-    }
-
     setState(() => _transcribing = true);
     _promptPlayer.stop();
     _answerPlayer.stop();
     try {
-      final text = await SherpaSttService.instance.transcribe(path);
+      final text = await WhisperSttService.instance.transcribe(path);
       if (!mounted) return;
       ReportSession.current.answers[_question.id] = QuestionAnswer(
         questionId: _question.id,
@@ -300,15 +243,12 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       setState(() => _transcribing = false);
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text(
+        ..showSnackBar(const SnackBar(
+          content: Text(
               'آواز نوں لکھت وچ بدلݨ نہیں ہو سکی۔ دوبارہ کوشش کرو یا جواب دوبارہ ریکارڈ کرو۔',
-              textAlign: TextAlign.center,
-            ),
-            backgroundColor: AppTheme.danger,
-          ),
-        );
+              textAlign: TextAlign.center),
+          backgroundColor: AppTheme.danger,
+        ));
     }
   }
 
@@ -352,36 +292,26 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       );
 
       // Local save always happens first; the OSS image upload is queued.
-      final saved = await ReportStorageService.instance.save(
-        report,
-        imageBytes: session.imageBytes,
-      );
+      final saved = await ReportStorageService.instance
+          .save(report, imageBytes: session.imageBytes);
       final queued = await UploadQueueService.instance.enqueueAndTry(saved);
-      // Also submit to backend API (fire-and-forget alongside OSS upload).
-      ReportApiService.instance.submit(
-        saved,
-        imageBytes: session.imageBytes,
-        deviceId: DeviceService.instance.deviceId,
-      );
       if (!mounted) return;
       // Replace the whole report flow with the completion screen.
-      Navigator.of(context)
-          .pushReplacementNamed(AppRoutes.complete, arguments: queued);
+      Navigator.of(context).pushReplacementNamed(
+        AppRoutes.complete,
+        arguments: queued,
+      );
     } catch (e) {
       debugPrint('[report] save failed: $e');
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text(
-              'رپورٹ محفوظ نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
-              textAlign: TextAlign.center,
-            ),
-            backgroundColor: AppTheme.danger,
-          ),
-        );
+        ..showSnackBar(const SnackBar(
+          content: Text('رپورٹ محفوظ نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
+              textAlign: TextAlign.center),
+          backgroundColor: AppTheme.danger,
+        ));
     }
   }
 
@@ -395,16 +325,11 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: AppTheme.cream,
-        appBar: AppTopBar(title: 'سوال ${_index + 1} / ${_questions.length}'),
+        appBar: AppTopBar(
+          title: 'سوال ${_index + 1} / ${_questions.length}',
+        ),
         body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: _saving || _transcribing ? _busyBody() : _questionBody(),
-              ),
-              if (_modelState != _ModelState.ready) _modelBanner(),
-            ],
-          ),
+          child: _saving || _transcribing ? _busyBody() : _questionBody(),
         ),
       ),
     );
@@ -412,71 +337,14 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
 
   Widget _busyBody() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircularProgressIndicator(color: AppTheme.darkGreen),
-          const SizedBox(height: 16),
-          Text(
-            _transcribing
-                ? 'جواب لکھت وچ بدلیا جا رہیا اے...'
-                : 'رپورٹ محفوظ ہو رہی اے...',
-            style: const TextStyle(fontSize: 16, color: AppTheme.darkGreen),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _modelBanner() {
-    final percent = (_modelProgress * 100).toInt();
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 12, 22, 16),
-      color: const Color(0xFFF3EFE2),
-      child: switch (_modelState) {
-        _ModelState.failed => Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'آواز ماڈل تیار نہیں ہو سکی۔',
-                style: TextStyle(fontSize: 13, color: AppTheme.danger),
-              ),
-            ),
-            TextButton(
-              onPressed: _ensureModel,
-              child: const Text(
-                'دوبارہ کوشش',
-                style: TextStyle(
-                  color: AppTheme.darkGreen,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const CircularProgressIndicator(color: AppTheme.darkGreen),
+        const SizedBox(height: 16),
+        Text(
+          _transcribing ? 'جواب لکھت وچ بدلیا جا رہیا اے...' : 'رپورٹ محفوظ ہو رہی اے...',
+          style: const TextStyle(fontSize: 16, color: AppTheme.darkGreen),
         ),
-        _ => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              _modelState == _ModelState.downloading
-                  ? 'آواز ماڈل تیار ہو رہیا اے (صرف پہلی وار، $percent٪)'
-                  : 'آواز ماڈل تیار کیتا جا رہیا اے...',
-              style: const TextStyle(fontSize: 13, color: AppTheme.darkGreen),
-            ),
-            const SizedBox(height: 6),
-            LinearProgressIndicator(
-              value: _modelState == _ModelState.downloading
-                  ? _modelProgress
-                  : null,
-              minHeight: 6,
-              color: AppTheme.darkGreen,
-              backgroundColor: const Color(0xFFE5E7DE),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ],
-        ),
-      },
+      ]),
     );
   }
 
@@ -490,7 +358,8 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             value: (_index) / _questions.length,
             minHeight: 6,
             backgroundColor: const Color(0xFFE5E7DE),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.darkGreen),
+            valueColor:
+                const AlwaysStoppedAnimation<Color>(AppTheme.darkGreen),
             borderRadius: BorderRadius.circular(4),
           ),
           const SizedBox(height: 28),
@@ -512,10 +381,8 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           IconButton(
             onPressed: _playPrompt,
             iconSize: 54,
-            icon: const Icon(
-              Icons.volume_up_rounded,
-              color: AppTheme.darkGreen,
-            ),
+            icon: const Icon(Icons.volume_up_rounded,
+                color: AppTheme.darkGreen),
             style: IconButton.styleFrom(
               backgroundColor: AppTheme.lightGreenFill,
               minimumSize: const Size(84, 84),
@@ -554,8 +421,8 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             _recording
                 ? 'ریکارڈنگ... ${_formatDuration(_recordSeconds)}'
                 : hasAnswer
-                ? 'جواب ریکارڈ ہو گیا (${_formatDuration(_recordSeconds)})'
-                : 'جواب دیݨ لئی مائیک دباؤ',
+                    ? 'جواب ریکارڈ ہو گیا (${_formatDuration(_recordSeconds)})'
+                    : 'جواب دیݨ لئی مائیک دباؤ',
             style: const TextStyle(
               color: AppTheme.darkGreen,
               fontSize: 17,
@@ -586,23 +453,18 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             const SizedBox(height: 12),
             PrimaryButton(
               icon: Icons.arrow_forward_rounded,
-              text: _index + 1 < _questions.length
-                  ? 'اگلا سوال'
-                  : 'رپورٹ مکمل کرو',
+              text: _index + 1 < _questions.length ? 'اگلا سوال' : 'رپورٹ مکمل کرو',
               onTap: (hasAnswer || !_question.required) ? _next : null,
             ),
             if (!_question.required) ...[
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _skip,
-                child: const Text(
-                  'چھڈو',
-                  style: TextStyle(
-                    color: AppTheme.darkGreen,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: const Text('چھڈو',
+                    style: TextStyle(
+                        color: AppTheme.darkGreen,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
               ),
             ],
           ],
@@ -618,5 +480,3 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
         '${remaining.toString().padLeft(2, '0')}';
   }
 }
-
-enum _ModelState { checking, downloading, ready, failed }

@@ -23,13 +23,13 @@ class FarmerAudioQuestion {
 }
 
 /// A farmer's answer attached to its question id. The recorded audio is
-/// transcribed locally by Sherpa ONNX and then discarded; only the text
+/// transcribed by Groq-hosted Whisper and then discarded; only the text
 /// is stored.
 class QuestionAnswer {
   final String questionId;
   final String questionAudioAsset;
 
-  /// Offline Sherpa ONNX transcript of the farmer's answer.
+  /// Whisper transcript of the farmer's answer (Shahmukhi script).
   final String answerText;
 
   /// 'transcribed' | 'empty' (skipped optional question)

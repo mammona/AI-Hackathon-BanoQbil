@@ -4,28 +4,10 @@
 /// in the Flutter app. OSS uploads go through a Function Compute endpoint
 /// that issues short-lived presigned URLs.
 ///
-/// Speech-to-text is fully OFFLINE (Sherpa ONNX, Omnilingual ASR 300M INT8)
-/// — there is NO remote STT endpoint anywhere in this app.
+/// Speech-to-text runs in the cloud (Groq-hosted Whisper large-v3); the
+/// API key is read from the local `.env` file, never from this class.
 class RemoteConfig {
   RemoteConfig._();
-
-  /// Omnilingual ASR 300M INT8 (sherpa-onnx) model source. The model is
-  /// downloaded ONCE into app storage and reused fully offline — it is
-  /// deliberately NOT bundled in the APK (~365 MB).
-  static const String asrModelBase =
-      'https://huggingface.co/csukuangfj2/'
-      'sherpa-onnx-omnilingual-asr-1600-languages-300M-ctc-int8-2025-11-12/'
-      'resolve/main/';
-
-  /// Files that make up the local ASR model, with minimum valid sizes
-  /// (used to detect truncated downloads and re-fetch them).
-  static const Map<String, int> asrModelFiles = {
-    'model.int8.onnx': 340 * 1024 * 1024, // actual ≈365,352,120 B (348.5 MiB)
-    'tokens.txt': 80 * 1024, // actual 86,423 B
-  };
-
-  /// Folder (inside app documents) where the ASR model lives.
-  static const String asrModelDir = 'asr_model';
 
   /// Function Compute endpoint that returns a presigned OSS upload URL.
   /// Request: POST {"filename": "...", "content_type": "..."}
