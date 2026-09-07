@@ -1,0 +1,123 @@
+[
+  {
+    "device_id": "DEMO-COTTON-NEAR-01",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 31.5208,
+    "longitude": 74.359,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-COTTON-NEAR-02",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "urdu",
+    "latitude": 31.529,
+    "longitude": 74.365,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-COTTON-NEAR-03",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "english",
+    "latitude": 31.54,
+    "longitude": 74.375,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-RICE-NEAR-01",
+    "crops": [
+      "rice"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 31.522,
+    "longitude": 74.36,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-COTTON-FAR-01",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 31.62,
+    "longitude": 74.45,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-COTTON-NO-GPS",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "urdu",
+    "latitude": null,
+    "longitude": null,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "d53e3bcf-6dec-4a0d-a80c-c54ca701f300",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 37.422,
+    "longitude": -122.084,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-LEAFCURL-COTTON-NEAR-01",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 37.43120822376686,
+    "longitude": -122.07588012257024,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-LEAFCURL-COTTON-NEAR-02",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "urdu",
+    "latitude": 37.40875942714468,
+    "longitude": -122.0936235851374,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-LEAFCURL-COTTON-OUTSIDE-2KM",
+    "crops": [
+      "cotton"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 37.4219960630528,
+    "longitude": -122.05342556120263,
+    "push_token": null,
+    "notifications_enabled": true
+  },
+  {
+    "device_id": "DEMO-LEAFCURL-RICE-NEAR",
+    "crops": [
+      "rice"
+    ],
+    "preferred_language": "punjabi",
+    "latitude": 37.427511212115036,
+    "longitude": -122.08982350155858,
+    "push_token": null,
+    "notifications_enabled": true
+  }
+]

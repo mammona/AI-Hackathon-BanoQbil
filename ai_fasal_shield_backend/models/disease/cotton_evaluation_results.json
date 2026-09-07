@@ -1,0 +1,67 @@
+{
+  "crop": "cotton",
+  "split": "validation",
+  "model_path": "models\\cotton_disease_classifier.pt",
+  "num_samples": 537,
+  "num_classes": 4,
+  "class_names": [
+    "bacterial_blight",
+    "curl_virus",
+    "fusarium_wilt",
+    "healthy"
+  ],
+  "accuracy": 0.9832,
+  "accuracy_percent": 98.32,
+  "per_class": {
+    "bacterial_blight": {
+      "precision": 0.9933,
+      "recall": 0.9739,
+      "f1_score": 0.9835,
+      "support": 153.0
+    },
+    "curl_virus": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 109.0
+    },
+    "fusarium_wilt": {
+      "precision": 0.982,
+      "recall": 0.982,
+      "f1_score": 0.982,
+      "support": 111.0
+    },
+    "healthy": {
+      "precision": 0.9641,
+      "recall": 0.9817,
+      "f1_score": 0.9728,
+      "support": 164.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      149,
+      0,
+      0,
+      4
+    ],
+    [
+      0,
+      109,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      109,
+      2
+    ],
+    [
+      1,
+      0,
+      2,
+      161
+    ]
+  ]
+}

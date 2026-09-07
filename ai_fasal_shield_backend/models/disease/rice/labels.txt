@@ -1,0 +1,3 @@
+bacterial_blight
+blast
+brown_spot

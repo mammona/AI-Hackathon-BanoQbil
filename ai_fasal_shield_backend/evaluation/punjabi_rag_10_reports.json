@@ -1,0 +1,140 @@
+[
+  {
+    "report_id": "RAG-PB-001",
+    "crop": "cotton",
+    "language": "punjabi",
+    "answer_1": "پتے پیلے ہو رہے نیں تے مڑ وی رہے نیں",
+    "answer_2": "ایہ مسئلہ تین دن پہلاں شروع ہویا سی",
+    "answer_3": "لگ بھگ آدھا ایکڑ متاثر اے",
+    "answer_4": "ہاں، مسئلہ ہور پھیل رہیا اے",
+    "affected_part": "leaves",
+    "rag_symptoms": [
+      {"text": "پتے پیلے ہو رہے نیں", "expected_code": "LEAF_YELLOWING"},
+      {"text": "پتے مڑ وی رہے نیں", "expected_code": "LEAF_CURLING"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-002",
+    "crop": "cotton",
+    "language": "punjabi",
+    "answer_1": "پتیاں اُتے بھورے دھبے پئے نیں تے پتے سکدے جا رہے نیں",
+    "answer_2": "لگ بھگ اک ہفتہ ہو گیا اے",
+    "answer_3": "تقریباً اک ایکڑ متاثر اے",
+    "answer_4": "ہن تک ہور نہیں پھیل رہیا",
+    "affected_part": "leaves",
+    "rag_symptoms": [
+      {"text": "پتیاں اُتے بھورے دھبے پئے نیں", "expected_code": "LEAF_BROWN_SPOTS"},
+      {"text": "پتے سکدے جا رہے نیں", "expected_code": "LEAF_DRYING"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-003",
+    "crop": "cotton",
+    "language": "punjabi",
+    "answer_1": "تنا کالا ہو رہیا اے تے کافی کمزور وی لگدا اے",
+    "answer_2": "پنج دن پہلاں ایہ گل نظر آئی سی",
+    "answer_3": "تقریباً دو کنال متاثر نیں",
+    "answer_4": "ہولی ہولی ہور پھیل رہیا اے",
+    "affected_part": "stem",
+    "rag_symptoms": [
+      {"text": "تنا کالا ہو رہیا اے", "expected_code": "STEM_DARKENING"},
+      {"text": "تنا کافی کمزور لگدا اے", "expected_code": "STEM_WEAKENING"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-004",
+    "crop": "cotton",
+    "language": "punjabi",
+    "answer_1": "ٹینڈے گل سڑ رہے نیں تے کئی ٹینڈے ڈگ وی رہے نیں",
+    "answer_2": "چار دن توں ایہ مسئلہ اے",
+    "answer_3": "لگ بھگ چوتھائی ایکڑ متاثر اے",
+    "answer_4": "ہاں، ہور ٹینڈیاں تک وی جا رہیا اے",
+    "affected_part": "boll",
+    "rag_symptoms": [
+      {"text": "ٹینڈے گل سڑ رہے نیں", "expected_code": "BOLL_ROTTING"},
+      {"text": "کئی ٹینڈے ڈگ رہے نیں", "expected_code": "BOLL_DROP"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-005",
+    "crop": "cotton",
+    "language": "punjabi",
+    "answer_1": "بوٹا مرجھایا ہویا اے تے قد وی ٹھیک طرح نہیں ودھ رہیا",
+    "answer_2": "دس دن توں حالت ایہو جیہی اے",
+    "answer_3": "لگ بھگ چالیس بوٹے متاثر نیں",
+    "answer_4": "حالت ہور خراب ہو رہی اے",
+    "affected_part": "whole plant",
+    "rag_symptoms": [
+      {"text": "بوٹا مرجھایا ہویا اے", "expected_code": "PLANT_WILTING"},
+      {"text": "بوٹے دا قد ٹھیک طرح نہیں ودھ رہیا", "expected_code": "STUNTED_GROWTH"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-006",
+    "crop": "rice",
+    "language": "punjabi",
+    "answer_1": "پتیاں اُتے لمیاں باریک دھاریاں نیں تے نوکاں سک رہیاں نیں",
+    "answer_2": "چھ دن پہلاں شروع ہویا سی",
+    "answer_3": "تقریباً اک ایکڑ متاثر اے",
+    "answer_4": "ہاں، ہور حصے وچ وی آ رہیا اے",
+    "affected_part": "leaves",
+    "rag_symptoms": [
+      {"text": "پتیاں اُتے لمیاں باریک دھاریاں نیں", "expected_code": "LEAF_STREAKS"},
+      {"text": "پتیاں دیاں نوکاں سک رہیاں نیں", "expected_code": "LEAF_TIP_DRYING"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-007",
+    "crop": "rice",
+    "language": "punjabi",
+    "answer_1": "چاول دے پتیاں اُتے لمبے نوکیلے سِریاں والے دھبے نیں",
+    "answer_2": "تین دن پہلاں نظر آئے سن",
+    "answer_3": "لگ بھگ ویہ بوٹے متاثر نیں",
+    "answer_4": "ہاں، نشان ہور پتیاں اُتے وی آ رہے نیں",
+    "affected_part": "leaves",
+    "rag_symptoms": [
+      {"text": "چاول دے پتیاں اُتے لمبے نوکیلے سِریاں والے دھبے نیں", "expected_code": "LEAF_SPINDLE_LESIONS"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-008",
+    "crop": "rice",
+    "language": "punjabi",
+    "answer_1": "بالیاں سک رہیاں نیں تے کافی دانے خالی یا گھٹ بھرے رہ جاندے نیں",
+    "answer_2": "لگ بھگ دو ہفتے ہو گئے نیں",
+    "answer_3": "تقریباً دو ایکڑ متاثر نیں",
+    "answer_4": "فی الحال حالت اک جیہی اے",
+    "affected_part": "panicle",
+    "rag_symptoms": [
+      {"text": "بالیاں سک رہیاں نیں", "expected_code": "PANICLE_DRYING"},
+      {"text": "بالیاں وچ کافی دانے خالی یا گھٹ بھرے رہ جاندے نیں", "expected_code": "PANICLE_POOR_FILLING"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-009",
+    "crop": "rice",
+    "language": "punjabi",
+    "answer_1": "جڑاں کالیاں ہو رہیاں نیں تے گل سڑ وی رہیاں نیں",
+    "answer_2": "اٹھ دن پہلاں مسئلہ شروع ہویا",
+    "answer_3": "تقریباً اک کنال متاثر اے",
+    "answer_4": "ہاں، متاثر بوٹے ودھ رہے نیں",
+    "affected_part": "roots",
+    "rag_symptoms": [
+      {"text": "جڑاں کالیاں ہو رہیاں نیں", "expected_code": "ROOT_DARKENING"},
+      {"text": "جڑاں گل سڑ رہیاں نیں", "expected_code": "ROOT_ROTTING"}
+    ]
+  },
+  {
+    "report_id": "RAG-PB-010",
+    "crop": "cotton",
+    "language": "punjabi",
+    "answer_1": "پتیاں اُتے چپچپا میٹھا مادہ جمیا ہویا اے",
+    "answer_2": "دو دن پہلاں نظر آیا سی",
+    "answer_3": "کجھ قطاراں متاثر نیں",
+    "answer_4": "ہاں، ہور پتیاں اُتے وی آ رہیا اے",
+    "affected_part": "leaves",
+    "rag_symptoms": [
+      {"text": "پتیاں اُتے چپچپا میٹھا مادہ جمیا ہویا اے", "expected_code": "OTHERS_MAP"}
+    ]
+  }
+]

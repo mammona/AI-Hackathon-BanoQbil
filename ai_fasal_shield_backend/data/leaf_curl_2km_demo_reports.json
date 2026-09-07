@@ -1,0 +1,93 @@
+{
+  "anchor": {
+    "latitude": 37.422,
+    "longitude": -122.084,
+    "max_report_distance_km": 2.0
+  },
+  "reports": [
+    {
+      "report_id": "LC2KM-COT-CURL-001",
+      "scenario": "leaf_curl_2km_demo",
+      "selected_crop": "cotton",
+      "language": "punjabi",
+      "question_1_raw": "کپاس دے پتے مڑ رہے نیں",
+      "question_2_raw": "دو دن توں",
+      "question_3_raw": "کجھ پودے متاثر نیں",
+      "question_4_raw": "ہولی ہولی ودھ رہیا اے",
+      "symptoms": [
+        "کپاس دے پتے مڑ رہے نیں"
+      ],
+      "symptom_codes": [
+        "LEAF_CURLING"
+      ],
+      "evidence_mode": "SYMPTOM_ONLY",
+      "evidence_strength": "MEDIUM",
+      "usable_for_outbreak": true,
+      "requires_expert_review": false,
+      "latitude": 37.42334898054558,
+      "longitude": -122.084,
+      "anchor_distance_km": 0.15,
+      "minutes_offset": 0,
+      "expected_alert_level": "NO_ALERT",
+      "expected_related_count": 1
+    },
+    {
+      "report_id": "LC2KM-COT-CURL-002",
+      "scenario": "leaf_curl_2km_demo",
+      "selected_crop": "cotton",
+      "language": "punjabi",
+      "question_1_raw": "نویں پتیاں اندر ول مڑ رہیاں نیں",
+      "question_2_raw": "تین دن توں",
+      "question_3_raw": "کھیت دے اک چھوٹے حصے وچ",
+      "question_4_raw": "ہور پودیاں تے وی آ رہیا اے",
+      "symptoms": [
+        "نویں پتیاں اندر ول مڑ رہیاں نیں"
+      ],
+      "symptom_codes": [
+        "LEAF_CURLING"
+      ],
+      "evidence_mode": "SYMPTOM_ONLY",
+      "evidence_strength": "MEDIUM",
+      "usable_for_outbreak": true,
+      "requires_expert_review": false,
+      "latitude": 37.42351273515319,
+      "longitude": -122.07689014646483,
+      "anchor_distance_km": 0.65,
+      "minutes_offset": 1,
+      "expected_alert_level": "MONITORING",
+      "expected_related_count": 2
+    },
+    {
+      "report_id": "LC2KM-COT-CURL-003",
+      "scenario": "leaf_curl_2km_demo",
+      "selected_crop": "cotton",
+      "language": "punjabi",
+      "question_1_raw": "پتیاں دے کنارے مڑ کے شکل بگاڑ رہے نیں",
+      "question_2_raw": "تین چار دن توں",
+      "question_3_raw": "تقریباً دس پودے",
+      "question_4_raw": "مسئلہ پھیلدا لگ رہیا اے",
+      "symptoms": [
+        "پتیاں دے کنارے مڑ کے شکل بگاڑ رہے نیں"
+      ],
+      "symptom_codes": [
+        "LEAF_CURLING"
+      ],
+      "evidence_mode": "SYMPTOM_ONLY",
+      "evidence_strength": "MEDIUM",
+      "usable_for_outbreak": true,
+      "requires_expert_review": false,
+      "latitude": 37.41244451181568,
+      "longitude": -122.08077649574271,
+      "anchor_distance_km": 1.1,
+      "minutes_offset": 2,
+      "expected_alert_level": "MONITORING",
+      "expected_related_count": 3
+    }
+  ],
+  "next_live_report_expectation": {
+    "purpose": "Submit one additional compatible cotton leaf-curl/curl-virus report from Flutter to promote the existing MONITORING cluster to AMBER.",
+    "expected_cluster_size_after_live_report": 4,
+    "expected_alert_level_after_live_report": "AMBER",
+    "notification_behavior": "AMBER does not notify automatically. Expert must confirm AMBER to RED, then eligible same-crop devices within 2 km of the calculated alert center receive the Punjabi notification."
+  }
+}

@@ -1,0 +1,5 @@
+# Optional later deployment dependencies.
+# Install this file instead of requirements.txt when moving from SQLite to PostgreSQL.
+-r requirements.txt
+psycopg[binary]==3.2.9
+alembic==1.16.5

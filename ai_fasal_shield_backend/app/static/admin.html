@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Fasal Shield | Admin Dashboard</title>
+  <style>
+    :root {
+      --bg:#07130f; --panel:#0d2119; --panel2:#102b20; --line:#234537;
+      --text:#ecf8f1; --muted:#9fc0b0; --green:#38d996; --green2:#8bf0bf;
+      --amber:#ffbd4a; --red:#ff6b6b; --blue:#63b3ff; --shadow:0 14px 40px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(145deg,#06110d,#0a1c15 45%,#07130f);color:var(--text)}
+    button,input,select,textarea{font:inherit}
+    .topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(7,19,15,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    .brand{display:flex;gap:12px;align-items:center}.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--green),#167c55);font-weight:800;color:#032017}.brand h1{font-size:18px;margin:0}.brand p{font-size:12px;color:var(--muted);margin:3px 0 0}
+    .top-actions{display:flex;gap:10px;align-items:center}.pill{font-size:12px;color:var(--green2);border:1px solid #2c5f49;background:#0c2a1d;padding:7px 10px;border-radius:999px}.btn{border:1px solid #35634f;background:#123525;color:var(--text);padding:9px 13px;border-radius:10px;cursor:pointer}.btn:hover{background:#184731}.btn.primary{background:var(--green);border-color:var(--green);color:#062016;font-weight:700}.btn.danger{background:#4c1e22;border-color:#7a3036;color:#ffd9d9}.btn.amber{background:#4a3612;border-color:#7c5a1b;color:#ffe3a6}
+    main{padding:22px;max-width:1540px;margin:auto}.grid{display:grid;gap:14px}.cards{grid-template-columns:repeat(6,minmax(130px,1fr));margin-bottom:18px}.card{background:linear-gradient(145deg,var(--panel),#0a1d16);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}.card .label{font-size:12px;color:var(--muted)}.card .value{font-size:28px;font-weight:800;margin-top:7px}.card .sub{font-size:11px;color:#779d8b;margin-top:5px}
+    .section{background:rgba(13,33,25,.88);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}.section-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}.section-head h2{font-size:16px;margin:0}.filters{display:flex;flex-wrap:wrap;gap:8px}.filters input,.filters select{background:#081b14;color:var(--text);border:1px solid #2b5140;border-radius:9px;padding:8px 10px;min-width:130px}.table-wrap{overflow:auto;max-height:460px}table{width:100%;border-collapse:collapse;min-width:1050px}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid #18392b;font-size:12px;vertical-align:top}th{position:sticky;top:0;background:#0b2118;color:#a9c9ba;z-index:1}tbody tr{cursor:pointer}tbody tr:hover{background:#103425}.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.2px;background:#163929;color:#bcebd4;border:1px solid #2c5d47}.tag.AMBER{background:#4b3510;color:#ffe2a4;border-color:#8b641f}.tag.RED{background:#4a181c;color:#ffc3c7;border-color:#833038}.tag.MONITORING{background:#123d58;color:#c9eaff;border-color:#2e6784}.tag.STRONG{background:#154932}.tag.LOW{background:#483523;color:#ffd8a8}.tag.review{background:#4c2d1e;color:#ffd5b4}.tag.VALID{background:#154932;color:#bff4d8}.tag.INVALID{background:#4a181c;color:#ffc3c7}.tag.FOLLOW_UP{background:#4b3510;color:#ffe2a4}.tag.NOT_REQUIRED{background:#163929;color:#bcebd4}.muted{color:var(--muted)}.empty{padding:28px;text-align:center;color:var(--muted)}
+    .layout2{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.detail{padding:18px;min-height:270px}.detail h3{margin:0 0 12px;font-size:15px}.kv{display:grid;grid-template-columns:160px 1fr;gap:8px 12px;font-size:12px;margin-bottom:14px}.kv .k{color:var(--muted)}.code-list{display:flex;gap:6px;flex-wrap:wrap}.raw{background:#071912;border:1px solid #244a39;border-radius:10px;padding:10px;white-space:pre-wrap;color:#d9eee4;margin:6px 0 12px;font-size:12px}.alert-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.alert-actions input,.alert-actions textarea{grid-column:1/-1;background:#071912;color:var(--text);border:1px solid #2b5140;border-radius:9px;padding:8px}.alert-actions textarea{min-height:68px;resize:vertical}.notice{padding:10px 12px;border:1px solid #345744;background:#0b281c;border-radius:10px;color:#bfe4d1;font-size:12px;margin:10px 0}.error{color:#ffb5b5}.success{color:#a6f4cc}
+    @media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.layout2{grid-template-columns:1fr}}@media(max-width:650px){main{padding:12px}.cards{grid-template-columns:repeat(2,1fr)}.topbar{padding:12px}.brand p,.pill{display:none}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="logo">FS</div><div><h1>AI Fasal Shield</h1><p>Admin & Agricultural Expert Dashboard</p></div></div>
+    <div class="top-actions"><span class="pill" id="apiState">API checking…</span><button class="btn" onclick="refreshAll()">Refresh</button></div>
+  </header>
+  <main>
+    <div class="notice"><b>Prototype input rule:</b> farmer image is optional. A report is accepted when it has an image <b>or</b> at least one Q1-Q4 answer. Only a completely empty report is rejected.</div>
+    <section class="grid cards">
+      <div class="card"><div class="label">Total reports</div><div class="value" id="totalReports">–</div><div class="sub">All accepted SQL records</div></div>
+      <div class="card"><div class="label">Usable for outbreak</div><div class="value" id="usableReports">–</div><div class="sub">Disease/symptom evidence</div></div>
+      <div class="card"><div class="label">Needs expert review</div><div class="value" id="reviewReports">–</div><div class="sub">Reports requiring attention</div></div>
+      <div class="card"><div class="label">Monitoring</div><div class="value" id="monitoringAlerts">–</div><div class="sub">Emerging clusters</div></div>
+      <div class="card"><div class="label">Amber alerts</div><div class="value" id="amberAlerts">–</div><div class="sub">Needs field verification</div></div>
+      <div class="card"><div class="label">Red alerts</div><div class="value" id="redAlerts">–</div><div class="sub">Expert confirmed</div></div>
+      <div class="card"><div class="label">Registered devices</div><div class="value" id="registeredDevices">–</div><div class="sub">Farmer app installations</div></div>
+      <div class="card"><div class="label">Unread notifications</div><div class="value" id="unreadNotifications">–</div><div class="sub">Waiting in farmer apps</div></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Farmer Reports</h2><div class="filters">
+        <input id="reportSearch" placeholder="Search report / disease / symptom" oninput="renderReports()" />
+        <select id="cropFilter" onchange="renderReports()"><option value="">All crops</option><option value="cotton">Cotton</option><option value="rice">Rice</option></select>
+        <select id="reviewFilter" onchange="renderReports()"><option value="">All reviews</option><option value="yes">Needs review</option><option value="no">No review required</option></select>
+        <select id="evidenceFilter" onchange="renderReports()"><option value="">All evidence</option><option>MULTIMODAL</option><option>IMAGE_ONLY</option><option>SYMPTOM_ONLY</option><option>CONTEXT_ONLY</option></select>
+      </div></div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Report</th><th>Crop</th><th>Disease</th><th>Symptoms</th><th>Evidence</th><th>Review</th><th>Location</th><th>Status</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+    </section>
+
+    <div class="layout2">
+      <section class="section"><div class="section-head"><h2>Outbreak Alerts</h2><span class="muted">Click an alert to review / verify</span></div><div class="table-wrap"><table style="min-width:760px"><thead><tr><th>Level</th><th>Crop</th><th>Disease / symptoms</th><th>Reports</th><th>Status</th><th>Center</th></tr></thead><tbody id="alertRows"></tbody></table></div></section>
+      <section class="section"><div class="section-head"><h2>Review Panel</h2><span class="muted" id="detailHint">Select a report or alert</span></div><div class="detail" id="detailPanel"><div class="empty">Select a farmer report to inspect raw answers, symptoms, disease evidence and GPS, or select an Amber alert to confirm/reject it.</div></div></section>
+    </div>
+  </main>
+<script>
+const API='/api/v1'; let reports=[], alerts=[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const tag=s=>`<span class="tag ${esc(s)}">${esc(s||'—')}</span>`;
+function fmtTime(s){if(!s)return '—'; try{return new Date(s).toLocaleString()}catch{return s}}
+async function getJSON(url,opts){const r=await fetch(url,opts); if(!r.ok){let t=await r.text();throw new Error(`${r.status}: ${t}`)} return r.json()}
+async function refreshAll(){
+  const state=document.getElementById('apiState'); state.textContent='Refreshing…'; state.className='pill';
+  try{
+    const [summary,rs,as]=await Promise.all([getJSON(`${API}/dashboard/summary`),getJSON(`${API}/reports?limit=500`),getJSON(`${API}/alerts?limit=500`)]);
+    reports=rs; alerts=as;
+    totalReports.textContent=summary.total_reports; usableReports.textContent=summary.usable_reports; reviewReports.textContent=summary.reports_needing_expert_review;
+    monitoringAlerts.textContent=summary.active_monitoring; amberAlerts.textContent=summary.amber_alerts; redAlerts.textContent=summary.red_alerts; registeredDevices.textContent=summary.registered_devices??0; unreadNotifications.textContent=summary.unread_notifications??0;
+    renderReports(); renderAlerts(); state.textContent='API connected'; state.className='pill success';
+  }catch(e){state.textContent='API error'; state.className='pill error'; detailPanel.innerHTML=`<div class="error">${esc(e.message)}</div>`}
+}
+function renderReports(){
+  const q=reportSearch.value.trim().toLowerCase(), crop=cropFilter.value, review=reviewFilter.value, ev=evidenceFilter.value;
+  const rows=reports.filter(r=>{
+    const hay=[r.report_id,r.disease,...(r.symptoms||[]),...(r.symptom_codes||[])].join(' ').toLowerCase();
+    return (!q||hay.includes(q))&&(!crop||r.selected_crop===crop)&&(!ev||r.evidence_mode===ev)&&(!review||(review==='yes'?r.requires_expert_review:!r.requires_expert_review));
+  });
+  reportRows.innerHTML=rows.length?rows.map(r=>`<tr onclick="showReport('${esc(r.report_id)}')"><td>${esc(fmtTime(r.reported_at))}</td><td><b>${esc(r.report_id)}</b></td><td>${esc(r.selected_crop)}</td><td>${esc(r.disease||'—')}${r.disease_confidence!=null?`<div class="muted">${Math.round(r.disease_confidence*100)}%</div>`:''}</td><td>${(r.symptom_codes||[]).map(tag).join(' ')||'<span class="muted">None</span>'}</td><td>${tag(r.evidence_mode)}<div class="muted">${esc(r.evidence_strength)}</div></td><td>${tag(r.expert_review_status||(r.requires_expert_review?'PENDING':'NOT_REQUIRED'))}${r.requires_expert_review?'<div class="muted">Needs review</div>':''}</td><td>${r.latitude!=null?`${Number(r.latitude).toFixed(4)}, ${Number(r.longitude).toFixed(4)}`:'—'}</td><td>${esc(r.processing_status)}</td></tr>`).join(''):`<tr><td colspan="9" class="empty">No matching reports</td></tr>`;
+}
+function renderAlerts(){
+  alertRows.innerHTML=alerts.length?alerts.map(a=>`<tr onclick="showAlert('${esc(a.alert_id)}')"><td>${tag(a.alert_level)}</td><td>${esc(a.crop)}</td><td><b>${esc(a.primary_disease||'Symptom cluster')}</b><div class="code-list">${(a.primary_symptom_codes||[]).map(tag).join('')}</div></td><td>${esc(a.report_count)}</td><td>${esc(a.status)}</td><td>${Number(a.center_latitude).toFixed(4)}, ${Number(a.center_longitude).toFixed(4)}</td></tr>`).join(''):`<tr><td colspan="6" class="empty">No outbreak alerts yet</td></tr>`;
+}
+async function showReport(id){
+  detailHint.textContent='Farmer report'; detailPanel.innerHTML='<div class="muted">Loading report…</div>';
+  try{const r=await getJSON(`${API}/reports/${encodeURIComponent(id)}`); const a=r.assessment||{}, f=r.farmer_input||{}, d=r.disease_prediction, e=r.evidence||{}, o=r.outbreak_assessment||{};
+  const reviewStatus=r.expert_review_status||'PENDING';
+  detailPanel.innerHTML=`<h3>${esc(r.report_id)} · ${esc(r.crop)}</h3>
+    <div class="kv"><div class="k">Timestamp</div><div>${esc(fmtTime(r.timestamp))}</div><div class="k">Device</div><div>${esc(r.device_id||'Not linked')}</div><div class="k">Evidence</div><div>${tag(e.evidence_mode)} ${tag(e.evidence_strength)}</div><div class="k">Disease</div><div>${d?`${esc(d.disease)} (${Math.round(d.confidence*100)}%)`:'No usable image disease prediction'}</div><div class="k">Disease ↔ symptoms</div><div>${tag(e.disease_symptom_consistency||'NOT_APPLICABLE')}<div class="muted">${esc(e.disease_symptom_consistency_reason||'')}</div></div><div class="k">Symptoms</div><div class="code-list">${(a.symptom_codes||[]).map(tag).join('')||'None'}</div><div class="k">Affected part</div><div>${esc(a.affected_part||'—')}</div><div class="k">Duration</div><div>${esc(a.problem_duration||'—')}</div><div class="k">Affected area</div><div>${esc(a.affected_area||'—')}</div><div class="k">Spread</div><div>${esc(a.spread_status||'—')}</div><div class="k">GPS</div><div>${r.location?.latitude!=null?`${r.location.latitude}, ${r.location.longitude}`:'Not provided'}</div><div class="k">Outbreak</div><div>${o.evaluated?`${tag(o.alert_level)} · related reports: ${o.related_report_count}`:esc(o.reason||'Not evaluated')}</div><div class="k">Expert review</div><div>${tag(reviewStatus)}${r.reviewed_by?` · ${esc(r.reviewed_by)}`:''}</div></div>
+    <h3>Raw farmer answers</h3><div class="muted">Q1 Symptoms</div><div class="raw">${esc(f.symptoms_raw||'Not answered')}</div><div class="muted">Q2 Onset</div><div class="raw">${esc(f.onset_raw||'Not answered')}</div><div class="muted">Q3 Extent</div><div class="raw">${esc(f.affected_extent_raw||'Not answered')}</div><div class="muted">Q4 Spread</div><div class="raw">${esc(f.spread_raw||'Not answered')}</div>
+    <h3>System assessment</h3><div class="raw">${esc(r.summary)}</div><div class="muted">Recommended next step</div><div class="raw">${esc(r.recommended_next_step)}</div>
+    <h3>Expert report review</h3><div class="notice">Mark VALID to trust this report as outbreak evidence. If the validated report completes a cluster, the system will create/update MONITORING or AMBER automatically. AMBER can then be confirmed to RED from the Outbreak Alert panel. Report review notes stay internal and are never sent to farmers.</div>
+    ${r.review_note?`<div class="muted">Previous review note</div><div class="raw">${esc(r.review_note)}</div>`:''}
+    <div class="alert-actions"><input id="reportExpertName" placeholder="Expert name" value="${esc(r.reviewed_by||'Agriculture Officer')}"><textarea id="reportReviewNote" placeholder="Report review note (internal - not sent to farmers)"></textarea><button class="btn primary" onclick="reviewReport('${esc(r.report_id)}','valid')">Mark Valid & Recheck Outbreak</button><button class="btn danger" onclick="reviewReport('${esc(r.report_id)}','invalid')">Mark Invalid</button><button class="btn" style="grid-column:1/-1" onclick="reviewReport('${esc(r.report_id)}','follow_up')">Needs Follow-up</button></div>`;
+  }catch(e){detailPanel.innerHTML=`<div class="error">${esc(e.message)}</div>`}}
+async function reviewReport(id,decision){
+  const expert=(document.getElementById('reportExpertName')?.value||'').trim(), note=(document.getElementById('reportReviewNote')?.value||'').trim(); if(!expert){alert('Enter expert name');return}
+  try{const result=await getJSON(`${API}/reports/${encodeURIComponent(id)}/review`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision,expert_name:expert,note:note||null})});
+    await refreshAll();
+    const o=result.outbreak_assessment||{};
+    if(decision==='valid'&&o.alert_id){alert(`Report validated. Outbreak state: ${o.alert_level}. Opening the outbreak alert.`); await showAlert(o.alert_id); return}
+    if(decision==='valid'){alert(`Report validated. Outbreak state: ${o.alert_level||'not yet a cluster'}.`)}
+    else if(decision==='invalid'){alert('Report marked INVALID and excluded from automatic outbreak detection.')}
+    else{alert('Report marked NEEDS FOLLOW-UP and temporarily excluded from automatic outbreak detection.')}
+    await showReport(id)
+  }catch(e){alert(e.message)}
+}
+async function showAlert(id){
+  detailHint.textContent='Outbreak alert'; detailPanel.innerHTML='<div class="muted">Loading alert…</div>';
+  try{const a=await getJSON(`${API}/alerts/${encodeURIComponent(id)}`); const isAmber=a.alert_level==='AMBER'&&a.status!=='rejected'; const isConfirmedRed=a.alert_level==='RED'&&a.status==='confirmed'; const canEdit=isAmber||isConfirmedRed;
+  detailPanel.innerHTML=`<h3>${tag(a.alert_level)} ${esc(a.alert_id)}</h3><div class="kv"><div class="k">Crop</div><div>${esc(a.crop)}</div><div class="k">Primary disease</div><div>${esc(a.primary_disease||'—')}</div><div class="k">Symptoms</div><div class="code-list">${(a.primary_symptom_codes||[]).map(tag).join('')||'—'}</div><div class="k">Linked reports</div><div>${(a.report_ids||[]).map(x=>`<button class="btn" style="padding:4px 7px;margin:2px" onclick="event.stopPropagation();showReport('${esc(x)}')">${esc(x)}</button>`).join('')}</div><div class="k">Cluster center</div><div>${a.center_latitude}, ${a.center_longitude}</div><div class="k">Outbreak linking radius</div><div>${a.radius_km} km</div><div class="k">Observed cluster spread</div><div>${Number(a.cluster_spread_km??0).toFixed(2)} km from center</div><div class="k">Notification radius</div><div>${Number(a.notification_radius_km??0).toFixed(2)} km</div><div class="k">Notification area</div><div>${Number(a.notification_area_km2??0).toFixed(2)} km²</div><div class="k">Eligible farmer devices</div><div><b>${a.eligible_device_count??0}</b> same-crop devices within ${Number(a.notification_radius_km??0).toFixed(2)} km</div><div class="k">Notifications created</div><div><b>${a.notification_count??0}</b></div><div class="k">Status</div><div>${esc(a.status)}</div></div>${canEdit?`<h3>${isAmber?'Expert verification':'Update farmer guidance'}</h3><div class="notice">${isAmber?'Confirming this Amber alert promotes it to RED and creates Punjabi (Shahmukhi) notifications for nearby registered farmers.':'This RED alert is already confirmed. You can change the Punjabi farmer instruction and refresh the existing notifications without creating duplicates.'} <b>Verification note is private.</b> <b>Farmer instruction is sent to farmers.</b></div><div class="alert-actions"><input id="expertName" placeholder="Expert name" value="${esc(a.verified_by||'Agriculture Officer')}"><textarea id="expertNote" placeholder="Verification note (internal - NOT sent to farmers)">${esc(a.verification_note||'')}</textarea><textarea id="farmerInstruction" dir="rtl" placeholder="کسان لئی ہدایت — ایہ کساناں نوں بھیجی جائے گی">${esc(a.farmer_instruction||'')}</textarea><button class="btn primary" onclick="verifyAlert('${esc(a.alert_id)}','confirmed')">${isAmber?'Confirm → RED & Notify Farmers':'Update Instruction & Refresh Notifications'}</button>${isAmber?`<button class="btn danger" onclick="verifyAlert('${esc(a.alert_id)}','rejected')">Reject alert</button>`:''}</div>`:`<div class="notice">This alert is not awaiting expert action.</div>`}`;
+  }catch(e){detailPanel.innerHTML=`<div class="error">${esc(e.message)}</div>`}}
+async function verifyAlert(id,decision){
+  const expert=(document.getElementById('expertName')?.value||'').trim();
+  const note=(document.getElementById('expertNote')?.value||'').trim();
+  const farmerInstruction=(document.getElementById('farmerInstruction')?.value||'').trim();
+  if(!expert){alert('Enter expert name');return}
+  try{const result=await getJSON(`${API}/alerts/${encodeURIComponent(id)}/verify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision,expert_name:expert,note:note||null,farmer_instruction:decision==='confirmed'?(farmerInstruction||null):null})}); if(decision==='confirmed'){alert(`Outbreak confirmed. ${result.notification_count??0} farmer notification(s) are ready for the mobile app.`)} await refreshAll(); await showAlert(id)}catch(e){alert(e.message)}
+}
+refreshAll(); setInterval(refreshAll,15000);
+</script>
+</body>
+</html>

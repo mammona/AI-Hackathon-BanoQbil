@@ -1,0 +1,199 @@
+{
+  "crop": "cotton",
+  "model_architecture": "efficientnet_b0",
+  "num_classes": 4,
+  "class_names": [
+    "bacterial_blight",
+    "curl_virus",
+    "fusarium_wilt",
+    "healthy"
+  ],
+  "class_mapping": {
+    "0": "bacterial_blight",
+    "1": "curl_virus",
+    "2": "fusarium_wilt",
+    "3": "healthy"
+  },
+  "class_counts": {
+    "bacterial_blight": 866,
+    "curl_virus": 616,
+    "fusarium_wilt": 624,
+    "healthy": 925
+  },
+  "image_size": 224,
+  "batch_size": 32,
+  "device": "cuda",
+  "frozen_epochs": 5,
+  "unfrozen_epochs": 25,
+  "final_val_loss": 0.0782,
+  "final_val_accuracy": 98.32,
+  "best_val_loss": 0.0782,
+  "trained_at": "2026-08-26T15:06:10.154854",
+  "model_file": "cotton_disease_classifier.pt",
+  "history": {
+    "phase1": [
+      {
+        "epoch": 1,
+        "train_loss": 1.2245,
+        "train_acc": 71.03,
+        "val_loss": 0.8822,
+        "val_acc": 81.19,
+        "lr": 0.001
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.5985,
+        "train_acc": 84.59,
+        "val_loss": 0.5178,
+        "val_acc": 87.52,
+        "lr": 0.001
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.417,
+        "train_acc": 88.19,
+        "val_loss": 0.3554,
+        "val_acc": 90.13,
+        "lr": 0.001
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.3581,
+        "train_acc": 89.34,
+        "val_loss": 0.2911,
+        "val_acc": 91.62,
+        "lr": 0.001
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.311,
+        "train_acc": 90.89,
+        "val_loss": 0.3697,
+        "val_acc": 90.88,
+        "lr": 0.001
+      }
+    ],
+    "phase2": [
+      {
+        "epoch": 1,
+        "train_loss": 0.2574,
+        "train_acc": 92.71,
+        "val_loss": 0.2769,
+        "val_acc": 92.92,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.1638,
+        "train_acc": 95.22,
+        "val_loss": 0.1871,
+        "val_acc": 94.97,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.09,
+        "train_acc": 96.9,
+        "val_loss": 0.143,
+        "val_acc": 95.34,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.0938,
+        "train_acc": 97.16,
+        "val_loss": 0.1105,
+        "val_acc": 97.58,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.0567,
+        "train_acc": 97.92,
+        "val_loss": 0.1031,
+        "val_acc": 97.77,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.0668,
+        "train_acc": 97.62,
+        "val_loss": 0.0839,
+        "val_acc": 97.95,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 7,
+        "train_loss": 0.0465,
+        "train_acc": 98.61,
+        "val_loss": 0.0952,
+        "val_acc": 97.58,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 8,
+        "train_loss": 0.0427,
+        "train_acc": 98.45,
+        "val_loss": 0.0782,
+        "val_acc": 98.32,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 9,
+        "train_loss": 0.0239,
+        "train_acc": 99.11,
+        "val_loss": 0.1093,
+        "val_acc": 97.95,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.022,
+        "train_acc": 99.04,
+        "val_loss": 0.1,
+        "val_acc": 97.95,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 11,
+        "train_loss": 0.0293,
+        "train_acc": 98.98,
+        "val_loss": 0.0931,
+        "val_acc": 98.32,
+        "lr": 0.0001
+      },
+      {
+        "epoch": 12,
+        "train_loss": 0.0228,
+        "train_acc": 99.14,
+        "val_loss": 0.1016,
+        "val_acc": 98.7,
+        "lr": 5e-05
+      },
+      {
+        "epoch": 13,
+        "train_loss": 0.0173,
+        "train_acc": 99.34,
+        "val_loss": 0.1025,
+        "val_acc": 98.51,
+        "lr": 5e-05
+      },
+      {
+        "epoch": 14,
+        "train_loss": 0.0134,
+        "train_acc": 99.44,
+        "val_loss": 0.092,
+        "val_acc": 98.51,
+        "lr": 5e-05
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.0161,
+        "train_acc": 99.37,
+        "val_loss": 0.0965,
+        "val_acc": 98.32,
+        "lr": 5e-05
+      }
+    ]
+  }
+}

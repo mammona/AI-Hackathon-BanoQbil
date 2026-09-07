@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+*.pyc
+.DS_Store
+data/reports/*
+!data/reports/.gitkeep
+models/disease/*/*.pth
+models/disease/*/*.pt

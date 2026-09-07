@@ -1,0 +1,36 @@
+{
+  "crop_identifier": {
+    "0": "wheat",
+    "1": "rice",
+    "2": "cotton",
+    "3": "other"
+  },
+  "wheat_disease": {
+    "0": "aphid",
+    "1": "black_rust",
+    "2": "blast",
+    "3": "brown_rust",
+    "4": "common_root_rot",
+    "5": "fusarium_head_blight",
+    "6": "healthy",
+    "7": "leaf_blight",
+    "8": "mildew",
+    "9": "mite",
+    "10": "septoria",
+    "11": "smut",
+    "12": "stem_fly",
+    "13": "tan_spot",
+    "14": "yellow_rust"
+  },
+  "rice_disease": {
+    "0": "bacterial_blight",
+    "1": "blast",
+    "2": "brown_spot"
+  },
+  "cotton_disease": {
+    "0": "bacterial_blight",
+    "1": "curl_virus",
+    "2": "fusarium_wilt",
+    "3": "healthy"
+  }
+}

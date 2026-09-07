@@ -1,0 +1,4 @@
+bacterial_blight
+curl_virus
+fusarium_wilt
+healthy
