@@ -1,19 +1,106 @@
+# AI Fasal Shield Backend
 
-## Prototype image path (V17 API-crop routing)
+**AI-powered crop disease detection and outbreak alert system for Pakistani farmers.**
 
-This build intentionally does **not** use SigLIP. `selected_crop` from the API directly routes the valid uploaded image to the corresponding cotton/rice disease model. See `IMAGE_MODEL_SETUP.md` for exact model placement and commands.
+AI Fasal Shield processes multilingual farmer reports (English, Urdu, Punjabi/Shahmukhi) through an AI pipeline that combines image-based disease classification, semantic symptom retrieval (RAG), and deterministic outbreak detection — all running locally with **zero paid API costs**.
 
-# AI Fasal Shield Backend - V17 Dedicated Qwen3 Reranker
+---
 
-The current symptom pipeline keeps the successful multilingual retrieval layer and replaces generative reranking with `Qwen/Qwen3-Reranker-0.6B`. Start with `START_HERE.md` and `QWEN3_DEDICATED_RERANKER_V17.md`.
+## Key Features
 
-```text
-qwen3:1.7b                  -> farmer extraction
-qwen3-embedding:0.6b        -> candidate retrieval
-Qwen/Qwen3-Reranker-0.6B    -> candidate reranking
+| Feature | Description |
+|---|---|
+| **Multilingual Symptom RAG** | Farmers report symptoms in Urdu, Punjabi, or English — no translation needed. Local Qwen3 embeddings retrieve canonical symptom matches. |
+| **Image Disease Classification** | Cotton and rice crop images are classified using trained EfficientNet models for disease detection. |
+| **Deterministic Outbreak Engine** | Geo-temporal clustering (5 km / 7 days) automatically detects outbreak patterns from multiple farmer reports. |
+| **Expert Review Dashboard** | Admin interface for reviewing reports, confirming amber alerts to red, and managing outbreak responses. |
+| **Farmer Notifications** | Punjabi (Shahmukhi) push notifications sent to nearby registered devices when alerts are confirmed. |
+| **Dedicated Reranker** | Qwen3-Reranker-0.6B cross-encoder ensures accurate symptom-to-canonical mapping. |
+| **Docker-Ready** | One-command startup with Docker Compose. No manual Python/setup required. |
+
+---
+
+## Tech Stack
+
+- **API:** FastAPI 0.116.1 + Uvicorn
+- **Database:** SQLAlchemy 2.0 + SQLite (zero-config) or PostgreSQL (optional)
+- **ML/Image:** PyTorch, torchvision, timm, Pillow
+- **LLM/NLP:** Transformers, HuggingFace Hub, httpx (Ollama API)
+- **Local AI Models:**
+  - `qwen3:1.7b` — farmer answer extraction (Q1–Q4)
+  - `qwen3-embedding:0.6b` — multilingual symptom embeddings
+  - `Qwen/Qwen3-Reranker-0.6B` — symptom candidate reranking
+- **Validation:** Pydantic v2, pydantic-settings
+- **Testing:** pytest
+
+---
+
+## Quick Start with Docker (Recommended)
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- [Ollama](https://ollama.com/) running on your host machine with required models:
+
+```bash
+ollama pull qwen3:1.7b
+ollama pull qwen3-embedding:0.6b
 ```
 
-No paid API is required. Download the reranker before the demo with:
+### Run
+
+```bash
+# Clone the repository
+git clone https://github.com/mammona/AI-Hackathon-BanoQabil.git
+cd AI-Hackathon-BanoQbil/ai_fasal_shield_backend
+
+# Build and start the container
+docker compose up --build
+
+# The API is ready when you see:
+# INFO: Uvicorn running on http://0.0.0.0:8000
+```
+
+### Access
+
+| URL | Description |
+|---|---|
+| http://localhost:8000/docs | **Swagger API Documentation** — test all endpoints interactively |
+| http://localhost:8000/admin | **Admin/Expert Dashboard** — review reports and manage alerts |
+| http://localhost:8000/health | Health check endpoint |
+
+### Stop
+
+```bash
+docker compose down        # Stop container
+docker compose down -v     # Stop and delete data volumes (fresh start)
+```
+
+---
+
+## Quick Start (Local Development)
+
+### Prerequisites
+
+- Python 3.11
+- [Ollama](https://ollama.com/) running with models pulled
+
+### Setup & Run
+
+```powershell
+# Windows — one-click setup
+SETUP_BACKEND.bat
+START_BACKEND.bat
+
+# Or manually:
+python -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Prepare the Reranker (First Time Only)
 
 ```powershell
 python -m scripts.prepare_qwen_reranker
@@ -21,162 +108,162 @@ python -m scripts.prepare_qwen_reranker
 
 ---
 
-# AI Fasal Shield Backend - V11 Language-Selected Multilingual Symptom RAG
+## API Endpoints
 
-V11 removes runtime symptom translation from the RAG path.
+### Reports
 
-The mobile/API request now contains a required `language` form parameter:
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/reports/process` | Submit a farmer report (image + Q1–Q4 answers) |
+| `GET` | `/api/v1/reports` | List all reports |
+| `POST` | `/api/v1/reports/{id}/review` | Expert review (VALID / INVALID / FOLLOW_UP) |
 
-- `english`
-- `urdu`
-- `punjabi` = Pakistani Punjabi in Shahmukhi script
+### Alerts & Outbreaks
 
-The selected language controls **which canonical symptom concept embeddings are used**.
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/alerts` | List active outbreak alerts |
+| `POST` | `/api/v1/alerts/{id}/confirm` | Expert confirms AMBER → RED alert |
 
-```text
-Farmer Q1
-   ↓
-Qwen3 1.7B copies original symptom spans + proposes affected_part
-   ↓
-Python validates explicit plant-part evidence
-   ↓
-crop + plant part hard filter
-   ↓
-language parameter
-   ├─ english  → English concept descriptions only
-   ├─ urdu     → Urdu concept descriptions only
-   └─ punjabi  → Punjabi/Shahmukhi concept descriptions only
-   ↓
-qwen3-embedding:0.6b
-   ↓
-Top-3 cosine similarity
-   ↓
-threshold + margin
-   ↓
-canonical symptom code OR OTHERS_MAP
+### Devices & Notifications
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/devices/register` | Register a farmer device |
+| `GET` | `/api/v1/devices/{id}/notifications` | Get device notifications |
+
+### Dashboard
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/dashboard/summary` | Dashboard statistics |
+| `GET` | `/admin` | Admin HTML dashboard |
+
+---
+
+## Report Processing Pipeline
+
+```
+Farmer Report (image + Q1–Q4 in Urdu/Punjabi/English)
+   │
+   ├─ Image submitted?
+   │   ├─ YES → Validate image → Classify disease (cotton/rice model)
+   │   └─ NO  → Skip image analysis
+   │
+   ├─ Qwen3 1.7B extracts:
+   │   ├─ Q1: Symptom spans + affected plant part
+   │   ├─ Q2: Problem duration
+   │   ├─ Q3: Affected area extent
+   │   └─ Q4: Spread status
+   │
+   ├─ Symptom RAG Pipeline:
+   │   ├─ qwen3-embedding:0.6b encodes symptoms
+   │   ├─ Top-5 cosine similarity retrieval
+   │   └─ Qwen3-Reranker-0.6B scores candidates
+   │
+   ├─ Evidence Assessment:
+   │   ├─ MULTIMODAL (image + symptoms)
+   │   ├─ IMAGE_ONLY
+   │   ├─ SYMPTOM_ONLY
+   │   └─ CONTEXT_ONLY
+   │
+   ├─ Disease-Symptom Consistency Check
+   │
+   ├─ Save Report → SQLite
+   │
+   └─ Outbreak Engine (5 km / 7 days):
+       ├─ NO_ALERT → MONITORING → AMBER → RED
+       └─ Farmer notifications in Punjabi
 ```
 
-There is no symptom alias table and no Punjabi/Urdu-to-English translation call before RAG.
+---
 
-## Knowledge base v6.0
+## Project Structure
 
-`app/constants/symptoms.py` contains 40 rice/cotton canonical concepts. Every concept has:
-
-- canonical English code/name
-- English semantic definition
-- Urdu semantic definition
-- Punjabi/Shahmukhi semantic definition
-- crop metadata
-- plant-part metadata
-
-Crop and plant-part metadata are **filters**, not embedding text.
-
-## API change
-
-`POST /api/v1/reports/process` now requires:
-
-```text
-language = english | urdu | punjabi
+```
+ai_fasal_shield_backend/
+├── app/
+│   ├── api/                  # FastAPI route handlers
+│   │   ├── admin_dashboard.py    # Admin dashboard + expert review
+│   │   ├── alerts.py             # Alert & outbreak endpoints
+│   │   ├── devices.py            # Device registration
+│   │   ├── rag_debug.py          # RAG testing endpoints
+│   │   └── reports.py            # Report submission & listing
+│   ├── constants/            # Symptom dictionary, plant parts
+│   ├── models/               # SQLAlchemy models + Pydantic schemas
+│   ├── repositories/         # Database access layer
+│   ├── services/             # Core business logic
+│   │   ├── disease_model_service.py      # Image classification
+│   │   ├── symptom_rag_service.py        # Multilingual RAG pipeline
+│   │   ├── qwen_report_service.py        # Qwen Q1-Q4 extraction
+│   │   ├── outbreak_service.py           # Geo-temporal clustering
+│   │   ├── notification_service.py       # Farmer notifications
+│   │   └── disease_symptom_consistency.py # Cross-validation
+│   ├── static/               # Admin dashboard HTML
+│   ├── config.py             # Pydantic settings
+│   ├── database.py           # SQLAlchemy engine setup
+│   └── main.py               # FastAPI application entry
+├── data/                     # Demo device/report fixtures
+├── models/disease/           # Trained cotton/rice classifiers
+├── scripts/                  # Evaluation & seed scripts
+├── tests/                    # Pytest test suite
+├── Dockerfile                # Docker image definition
+├── docker-compose.yml        # One-command container startup
+├── .env.docker               # Docker environment config
+├── requirements.txt          # Python dependencies
+└── README.md                 # This file
 ```
 
-Example for the user's current test:
+---
 
-```text
-selected_crop = cotton
-language = urdu
-answer_1 = پتے پیلے ہو رہے ہیں اور مڑ رہے ہیں
-```
+## Environment Configuration
 
-The response preserves the report language and each mapping includes `retrieval_language`.
+Key settings (via `.env` or `.env.docker`):
 
-## Local models
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_URL` | `sqlite:///./fasal_guard.db` | Database connection |
+| `QWEN_BASE_URL` | `http://localhost:11434` | Ollama server URL |
+| `QWEN_MODEL` | `qwen3:1.7b` | Farmer extraction model |
+| `SYMPTOM_EMBEDDING_MODEL` | `qwen3-embedding:0.6b` | Embedding model |
+| `SYMPTOM_RERANKER_MODEL` | `Qwen/Qwen3-Reranker-0.6B` | Reranker model |
+| `OUTBREAK_RADIUS_KM` | `5.0` | Outbreak clustering radius |
+| `NOTIFICATION_RADIUS_KM` | `2.0` | Farmer notification radius |
+| `CORS_ORIGINS` | `*` | Allowed CORS origins |
 
-```text
-qwen3:1.7b
-qwen3-embedding:0.6b
-```
+---
 
-No paid API is required.
-
-## Recommended validation
+## Testing
 
 ```powershell
-python -m pytest -q tests\test_language_selected_rag.py tests\test_symptom_rag.py tests\test_plant_part_validator.py tests\test_qwen_focused_questions.py tests\test_embedding_backend.py
+# Run full test suite
+python -m pytest -q
 
-python scripts\evaluate_language_selected_rag.py --language urdu
-python scripts\evaluate_language_selected_rag.py --language punjabi
-python scripts\evaluate_language_selected_rag.py --language english
+# Run specific test categories
+python -m pytest tests/test_symptom_rag.py tests/test_outbreak_engine.py
+python -m pytest tests/test_notification_flow.py tests/test_disease_symptom_consistency.py
 
-python scripts\evaluate_multilingual_pipeline.py --case 1
+# Run evaluation benchmarks
+python scripts/evaluate_multilingual_pipeline.py --case 1
+python scripts/evaluate_punjabi_rag_reports.py
 ```
 
-Read `LANGUAGE_SELECTED_SYMPTOM_RAG_V11.md` for the design details.
+---
 
-## V12 clean language-selected RAG
+## Demo
 
-The current symptom retriever uses the report `language` parameter and embeds short, positive concept descriptions only. Detailed exclusion-heavy definitions are retained for documentation but are not used as embedding documents. Start evaluation with:
+1. Start the backend: `docker compose up --build`
+2. Open http://localhost:8000/docs
+3. Submit a report via `POST /api/v1/reports/process`:
+   - Select crop: `cotton` or `rice`
+   - Select language: `urdu`, `punjabi`, or `english`
+   - Enter Q1 (symptoms): e.g., `پتے پیلے ہو رہے ہیں اور مڑ رہے ہیں` (Punjabi: leaves yellowing and curling)
+   - Optionally upload a crop image
+   - Provide GPS coordinates for outbreak clustering
+4. View results at http://localhost:8000/admin
 
-```powershell
-python scripts\evaluate_clean_language_rag.py --language punjabi
-python scripts\evaluate_clean_language_rag.py --language urdu
-```
+---
 
-See `CLEAN_LANGUAGE_SYMPTOM_RAG_V12.md`.
+## License
 
-
-## V13 retrieve -> rerank symptom RAG
-
-The current symptom pipeline uses Qwen3-Embedding for Top-5 candidate retrieval and constrained local Qwen3 1.7B reranking only for ambiguous cases. Test it in Swagger with `POST /api/v1/rag/test` or run the bundled 10-report benchmark with `POST /api/v1/rag/test-suite/punjabi`. See `RETRIEVE_RERANK_RAG_V13.md`.
-
-## V17 outbreak-ready update
-
-The current prototype keeps the V17 Qwen extraction + embedding + dedicated reranker pipeline and adds deterministic SQL-backed outbreak detection. See `CHANGELOG_V17_OUTBREAK.md` and `OUTBREAK_DEMO.md`.
-
-Main additions:
-- optional image and independently optional Q1-Q4 answers (at least one input required)
-- `MULTIMODAL`, `IMAGE_ONLY`, `SYMPTOM_ONLY`, and `CONTEXT_ONLY` evidence modes
-- SQLite `alerts` + `alert_reports`
-- 5 km / 7 day deterministic clustering
-- `NO_ALERT -> MONITORING -> AMBER -> expert-confirmed RED`
-
-If upgrading an old SQLite DB, startup adds the new columns/tables without deleting old reports. Old rows are preserved conservatively; for the cleanest judged demo, reset the prototype DB and submit the demo reports again:
-
-```powershell
-python -m scripts.reset_prototype_db
-```
-
-## Admin / Expert Dashboard
-
-After starting Uvicorn, open:
-
-```text
-http://127.0.0.1:8000/admin
-```
-
-The dashboard reads the existing SQLite/API data and lets the admin or agricultural expert inspect farmer reports and review outbreak alerts. Amber alerts can be confirmed to Red or rejected directly from the dashboard.
-
-### Important input rule
-
-The crop image is **optional**. Q1-Q4 are also individually optional. `/api/v1/reports/process` accepts the report when an image OR at least one farmer answer is present. Only an entirely empty evidence submission is rejected.
-
-
-## Punjabi confirmed farmer notifications
-
-When an agricultural expert confirms an AMBER alert, the backend promotes it to RED and creates farmer-facing notification records in Punjabi (Shahmukhi). Internal canonical crop/disease/symptom codes remain unchanged for outbreak logic.
-
-The expert verification note is stored separately on the alert and is **not** used as the farmer notification message.
-
-## Expert report review + Punjabi farmer alerts
-
-The admin dashboard now supports `VALID`, `INVALID`, and `FOLLOW_UP` review decisions for individual farmer reports. Reports that the AI flags for expert review are held out of automatic outbreak clustering until marked `VALID`. A valid review immediately rechecks the 5 km / 7 day outbreak rules; if it produces an AMBER alert, the dashboard opens that alert for expert confirmation. Confirming AMBER promotes it to RED and creates Punjabi Shahmukhi notifications for eligible registered farmer devices. Internal report-review and alert-verification notes are never sent to farmers.
-
-API: `POST /api/v1/reports/{report_id}/review`
-
-
-## Reviewer instructions in farmer notifications
-
-Alert confirmation separates the private verification note from the Punjabi farmer instruction. Only `farmer_instruction` is appended to farmer notifications. The private verification note remains admin-only.
-
-## V17.1 device registration fix
-
-The backend now automatically registers/updates any mobile `device_id` received with a farmer report. Bundled demo devices are also seeded idempotently at startup from `data/demo_devices.json` when `AUTO_SEED_DEMO_DEVICES=true`. See `DEVICE_REGISTRATION_FIX.md`.
+This project was developed for the AI Hackathon Bano Qabil competition.

@@ -1,0 +1,32 @@
+# AI Fasal Shield Backend – Docker Compose
+# Usage:
+#   docker compose up --build          (first time / after code changes)
+#   docker compose up                  (subsequent runs, faster)
+#   docker compose down                (stop)
+#
+# The API will be available at http://localhost:8000
+# Swagger docs at http://localhost:8000/docs
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fasal-shield-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    volumes:
+      # Persist the SQLite database across container restarts
+      - fasal_guard_data:/app/data
+      # Persist uploaded report images
+      - fasal_guard_reports:/app/data/reports
+    extra_hosts:
+      # Allow the container to reach Ollama running on the host machine
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  fasal_guard_data:
+  fasal_guard_reports:

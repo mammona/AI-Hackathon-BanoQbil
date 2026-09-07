@@ -1,0 +1,18 @@
+# Docker build context exclusions
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.qoder
+*.md
+.env
+fasal_guard.db
+*.onnx
+evaluation/
+scripts/
+tests/
+migrations/
+data/reports/*/
