@@ -29,7 +29,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
     super.initState();
     _reload();
     // Retry queued OSS image uploads whenever the tab is opened.
-    UploadQueueService.instance.retryPending();
+    // We reload again after retry so the UI reflects the new sync status.
+    UploadQueueService.instance.retryPending().then((_) {
+      if (mounted) _reload();
+    });
   }
 
   void _reload() {
@@ -51,16 +54,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                      color: AppTheme.darkGreen),
+                  child: CircularProgressIndicator(color: AppTheme.darkGreen),
                 );
               }
               final list = snapshot.data ?? const <FarmerReport>[];
               if (list.isEmpty) return _empty();
-              return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
-                itemCount: list.length,
-                itemBuilder: (context, i) => _card(list[i]),
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await UploadQueueService.instance.retryPending();
+                  _reload();
+                },
+                color: AppTheme.darkGreen,
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
+                  itemCount: list.length,
+                  itemBuilder: (context, i) => _card(list[i]),
+                ),
               );
             },
           ),
@@ -195,7 +204,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           const Color(0xFF2F6B1E),
           const Color(0xFFE3EED0),
           const Color(0xFFBCD69A),
-          'تصویر بھیج دتی گئی'
+          'سرور نوں بھیج دتی گئی اے'
         ),
       'uploading' => (
           const Color(0xFF1A5276),
@@ -213,13 +222,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
           const Color(0xFF8A6D1A),
           const Color(0xFFFFF7E0),
           const Color(0xFFEAD9A0),
-          'انٹرنیٹ دا انتظار (پینڈنگ سنک)'
+          'انٹرنیٹ دا انتظار اے'
         ),
       _ => (
           const Color(0xFF8A6D1A),
           const Color(0xFFFFF7E0),
           const Color(0xFFEAD9A0),
-          'فون وچ محفوظ'
+          'فون وچ محفوظ اے'
         ),
     };
     return Container(
@@ -291,10 +300,10 @@ class _ReportDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(right: 30),
                             child: Text(
                               a.answerText.isEmpty ? '—' : a.answerText,
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  color: Color(0xFF3C4A3E)),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: const Color(0xFF3C4A3E),
+                                    fontSize: 16,
+                                  ),
                             ),
                           ),
                         ],

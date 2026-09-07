@@ -96,12 +96,15 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(const SnackBar(
-          content: Text(
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
               'مائیکروفون دی اجازت نہیں ملی۔ جواب ریکارڈ کرن لئی اجازت دیو تے دوبارہ کوشش کرو۔',
-              textAlign: TextAlign.center),
-          backgroundColor: AppTheme.darkGreen,
-        ));
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: AppTheme.darkGreen,
+          ),
+        );
       return;
     }
 
@@ -109,10 +112,27 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       final temp = await getTemporaryDirectory();
       final path =
           '${temp.path}/answer_${_question.id}_${DateTime.now().millisecondsSinceEpoch}.wav';
-      await _promptPlayer.stop();
-      await _answerPlayer.stop();
+
+      // CRITICAL: Stop ALL players and WAIT for the hardware to release.
+      // AudioService.stop() now awaits full player disposal (including
+      // audio-session release) so the microphone is actually free before
+      // we start recording.  The extra delay covers any OS-level cleanup
+      // that happens after the player future resolves.
+      await Future.wait([
+        _promptPlayer.stop().timeout(const Duration(milliseconds: 500)),
+        _answerPlayer.stop().timeout(const Duration(milliseconds: 500)),
+      ]).timeout(const Duration(milliseconds: 600));
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      // Clear any leftover path so the UI doesn't show old state.
+      setState(() {
+        _recordedPath = null;
+        _recording = true;
+      });
+
       await _recorder.start(path);
-      debugPrint('[qa] recorder started for ${_question.id}');
+      debugPrint('[qa] recorder started for ${_question.id} at $path');
+
       _recordSeconds = 0;
       _recordTimer?.cancel();
       _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -122,18 +142,20 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           _stopRecording();
         }
       });
-      if (!mounted) return;
-      setState(() => _recording = true);
     } catch (e) {
       debugPrint('[qa] recording failed: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(const SnackBar(
-          content: Text('ریکارڈنگ شروع نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
-              textAlign: TextAlign.center),
-          backgroundColor: AppTheme.darkGreen,
-        ));
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'ریکارڈنگ شروع نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: AppTheme.darkGreen,
+          ),
+        );
     }
   }
 
@@ -142,6 +164,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
     _recordTimer?.cancel();
     try {
       final path = await _recorder.stop();
+      // Small delay to ensure the OS has finished writing the WAV file to disk
+      // before we try to play it or transcribe it.
+      await Future.delayed(const Duration(milliseconds: 300));
+
       debugPrint('[qa] stop: seconds=$_recordSeconds path=$path');
       if (!mounted) return;
       // An empty tap (under 1 second) is not a usable required answer.
@@ -149,11 +175,15 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
         setState(() => _recording = false);
         ScaffoldMessenger.of(context)
           ..clearSnackBars()
-          ..showSnackBar(const SnackBar(
-            content: Text('پہلاں تھوڑا جیہا بول کے ریکارڈ کرو۔',
-                textAlign: TextAlign.center),
-            backgroundColor: AppTheme.darkGreen,
-          ));
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'پہلاں تھوڑا جیہا بول کے ریکارڈ کرو۔',
+                textAlign: TextAlign.center,
+              ),
+              backgroundColor: AppTheme.darkGreen,
+            ),
+          );
         return;
       }
       setState(() {
@@ -223,7 +253,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
     _promptPlayer.stop();
     _answerPlayer.stop();
     try {
-      final text = await WhisperSttService.instance.transcribe(path);
+      final text = await WhisperSttService.instance.transcribe(
+        path,
+        questionId: _question.id,
+      );
       if (!mounted) return;
       ReportSession.current.answers[_question.id] = QuestionAnswer(
         questionId: _question.id,
@@ -243,12 +276,15 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       setState(() => _transcribing = false);
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(const SnackBar(
-          content: Text(
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
               'آواز نوں لکھت وچ بدلݨ نہیں ہو سکی۔ دوبارہ کوشش کرو یا جواب دوبارہ ریکارڈ کرو۔',
-              textAlign: TextAlign.center),
-          backgroundColor: AppTheme.danger,
-        ));
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: AppTheme.danger,
+          ),
+        );
     }
   }
 
@@ -260,6 +296,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       setState(() {
         _index++;
         _recordSeconds = 0;
+        _recordedPath = null; // Ensure the next question starts with a fresh recording state.
       });
       WidgetsBinding.instance.addPostFrameCallback((_) => _playPrompt());
     } else {
@@ -292,26 +329,30 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       );
 
       // Local save always happens first; the OSS image upload is queued.
-      final saved = await ReportStorageService.instance
-          .save(report, imageBytes: session.imageBytes);
+      final saved = await ReportStorageService.instance.save(
+        report,
+        imageBytes: session.imageBytes,
+      );
       final queued = await UploadQueueService.instance.enqueueAndTry(saved);
       if (!mounted) return;
       // Replace the whole report flow with the completion screen.
-      Navigator.of(context).pushReplacementNamed(
-        AppRoutes.complete,
-        arguments: queued,
-      );
+      Navigator.of(context)
+          .pushReplacementNamed(AppRoutes.complete, arguments: queued);
     } catch (e) {
       debugPrint('[report] save failed: $e');
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(const SnackBar(
-          content: Text('رپورٹ محفوظ نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
-              textAlign: TextAlign.center),
-          backgroundColor: AppTheme.danger,
-        ));
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'رپورٹ محفوظ نہیں ہو سکی۔ دوبارہ کوشش کرو۔',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: AppTheme.danger,
+          ),
+        );
     }
   }
 
@@ -325,9 +366,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: AppTheme.cream,
-        appBar: AppTopBar(
-          title: 'سوال ${_index + 1} / ${_questions.length}',
-        ),
+        appBar: AppTopBar(title: 'سوال ${_index + 1} / ${_questions.length}'),
         body: SafeArea(
           child: _saving || _transcribing ? _busyBody() : _questionBody(),
         ),
@@ -337,14 +376,19 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
 
   Widget _busyBody() {
     return Center(
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const CircularProgressIndicator(color: AppTheme.darkGreen),
-        const SizedBox(height: 16),
-        Text(
-          _transcribing ? 'جواب لکھت وچ بدلیا جا رہیا اے...' : 'رپورٹ محفوظ ہو رہی اے...',
-          style: const TextStyle(fontSize: 16, color: AppTheme.darkGreen),
-        ),
-      ]),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator(color: AppTheme.darkGreen),
+          const SizedBox(height: 16),
+          Text(
+            _transcribing
+                ? 'جواب لکھت وچ بدلیا جا رہیا اے...'
+                : 'رپورٹ محفوظ ہو رہی اے...',
+            style: const TextStyle(fontSize: 16, color: AppTheme.darkGreen),
+          ),
+        ],
+      ),
     );
   }
 
@@ -358,8 +402,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             value: (_index) / _questions.length,
             minHeight: 6,
             backgroundColor: const Color(0xFFE5E7DE),
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(AppTheme.darkGreen),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.darkGreen),
             borderRadius: BorderRadius.circular(4),
           ),
           const SizedBox(height: 28),
@@ -381,8 +424,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           IconButton(
             onPressed: _playPrompt,
             iconSize: 54,
-            icon: const Icon(Icons.volume_up_rounded,
-                color: AppTheme.darkGreen),
+            icon: const Icon(
+              Icons.volume_up_rounded,
+              color: AppTheme.darkGreen,
+            ),
             style: IconButton.styleFrom(
               backgroundColor: AppTheme.lightGreenFill,
               minimumSize: const Size(84, 84),
@@ -421,8 +466,8 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             _recording
                 ? 'ریکارڈنگ... ${_formatDuration(_recordSeconds)}'
                 : hasAnswer
-                    ? 'جواب ریکارڈ ہو گیا (${_formatDuration(_recordSeconds)})'
-                    : 'جواب دیݨ لئی مائیک دباؤ',
+                ? 'جواب ریکارڈ ہو گیا (${_formatDuration(_recordSeconds)})'
+                : 'جواب دیݨ لئی مائیک دباؤ',
             style: const TextStyle(
               color: AppTheme.darkGreen,
               fontSize: 17,
@@ -453,18 +498,23 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             const SizedBox(height: 12),
             PrimaryButton(
               icon: Icons.arrow_forward_rounded,
-              text: _index + 1 < _questions.length ? 'اگلا سوال' : 'رپورٹ مکمل کرو',
+              text: _index + 1 < _questions.length
+                  ? 'اگلا سوال'
+                  : 'رپورٹ مکمل کرو',
               onTap: (hasAnswer || !_question.required) ? _next : null,
             ),
             if (!_question.required) ...[
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _skip,
-                child: const Text('چھڈو',
-                    style: TextStyle(
-                        color: AppTheme.darkGreen,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700)),
+                child: const Text(
+                  'چھڈو',
+                  style: TextStyle(
+                    color: AppTheme.darkGreen,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ],

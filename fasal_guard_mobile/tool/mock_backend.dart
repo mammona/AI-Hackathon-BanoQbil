@@ -18,11 +18,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-void main() async {
-  final api = await HttpServer.bind(InternetAddress.anyIPv4, 8000);
+void main(List<String> args) async {
+  final apiPort = args.isNotEmpty ? int.tryParse(args[0]) ?? 8000 : 8000;
+  final api = await HttpServer.bind(InternetAddress.anyIPv4, apiPort);
   final oss = await HttpServer.bind(InternetAddress.anyIPv4, 8787);
-  _log('listening on :8000 (ApiConfig) and :8787 (RemoteConfig/OSS)');
-  _log('emulator reaches this PC as http://10.0.2.2:8000 and :8787');
+  _log('listening on :$apiPort (ApiConfig) and :8787 (RemoteConfig/OSS)');
+  _log('emulator reaches this PC as http://10.0.2.2:$apiPort and :8787');
 
   api.listen((req) => _handle(req, 'API'));
   oss.listen((req) => _handle(req, 'OSS'));
@@ -82,8 +83,49 @@ Future<void> _handle(HttpRequest req, String tag) async {
 
     // ---- Notifications list ----
     if (method == 'GET' && path.contains('/notifications')) {
-      _replyJson(req, 200, {'notifications': <dynamic>[]});
-      _log('    <-- returned empty notifications list');
+      final now = DateTime.now().toIso8601String();
+      final earlier = DateTime.now()
+          .subtract(const Duration(hours: 3))
+          .toIso8601String();
+      final notifs = [
+        {
+          'notification_id': 'notif_${DateTime.now().millisecondsSinceEpoch}',
+          'alert_id': 'alert_cotton_leaf_rust',
+          'crop': 'cotton',
+          'title': 'لاہور وچ کپاہ دی پتی زنگ دی اطلاع',
+          'message':
+              'تہاڈے علاقے وچ کپاہ دی پتی زنگ دی خبر ملی اے۔ اپݨی فصل چیک کرو۔',
+          'message_local':
+              'تہاڈے علاقے وچ کپاہ دی پتی زنگ دی خبر ملی اے۔ اپݨی فصل چیک کرو۔',
+          'distance_km': 2.3,
+          'status': 'unread',
+          'created_at': now,
+        },
+        {
+          'notification_id':
+              'notif_old_${DateTime.now().millisecondsSinceEpoch}',
+          'alert_id': null,
+          'crop': 'rice',
+          'title': 'چاول دی فصل لئی مشورہ',
+          'message': 'اگلے ہفتے بارش دا امکان اے۔ فصل دی کٹائی پہلاں کرو۔',
+          'message_local':
+              'اگلے ہفتے بارش دا امکان اے۔ فصل دی کٹائی پہلاں کرو۔',
+          'distance_km': 5.1,
+          'status': 'unread',
+          'created_at': earlier,
+        },
+      ];
+      _replyJson(req, 200, notifs);
+      _log('    <-- returned ${notifs.length} notifications');
+      return;
+    }
+
+    // ---- Mark notification read ----
+    if (method == 'POST' &&
+        path.contains('/notifications') &&
+        path.contains('/read')) {
+      _replyJson(req, 200, {'read_at': DateTime.now().toIso8601String()});
+      _log('    <-- notification marked read');
       return;
     }
 

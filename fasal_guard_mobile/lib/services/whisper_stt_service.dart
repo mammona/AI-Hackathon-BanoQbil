@@ -24,21 +24,31 @@ class WhisperSttService {
   static const _endpoint =
       'https://api.groq.com/openai/v1/audio/transcriptions';
 
-  /// Transcribes one recorded WAV file. Throws on any failure (missing
-  /// key, network, HTTP) so the caller can keep the temp audio and retry.
-  Future<String> transcribe(String wavPath) async {
+  /// Transcribes one recorded WAV file.
+  Future<String> transcribe(String wavPath, {String? questionId}) async {
     final key = dotenv.env['GROQ_API_KEY'] ?? '';
     if (key.isEmpty) {
       throw StateError('GROQ_API_KEY missing from .env');
     }
 
+    // Question-specific prompts help Whisper understand the context (numbers, symptoms, time).
+    // The prompt is updated to use "Theth" (authentic rural) Punjabi vocabulary.
+    final prompts = {
+      'symptom_description': 'ایہ کسان دی فصل دے روگ دے بارے اے۔ کیہ تکلیف نظر آئی؟ پتے پیلے نیں، کیڑا لگا اے یا کیہ روگ اے؟',
+      'symptom_duration': 'ایہ وقت دے بارے اے۔ ایہ روگ کدوں توں لگا اے؟ چار دن، اک ہفتہ یا کنا چِرا؟',
+      'affected_spread': 'ایہ رقبے دے بارے اے۔ کِنا پیلی خراب ہویا اے؟ کِنے بوٹے مِڑے نیں؟',
+      'spreading_status': 'ایہ روگ دے ودھن دے بارے اے۔ کیہ ایہ ہور ودھ رہیا اے؟ ہاں یا نئیں؟',
+    };
+
+    final basePrompt = 'ایہ ٹھیٹھ دیسی پنجابی شاہ مکھی وچ اے۔ لہجہ پنڈاں والا اے۔ ';
+    final specificPrompt = prompts[questionId] ?? 'پنجابی شاہ مکھی وچ جواب دیو۔';
+
     final sw = Stopwatch()..start();
     final request = http.MultipartRequest('POST', Uri.parse(_endpoint))
       ..headers['Authorization'] = 'Bearer $key'
       ..fields['model'] = 'whisper-large-v3'
-      // Farmers speak Punjabi; pinning the language stops Whisper from
-      // drifting into Hindi on short field recordings.
       ..fields['language'] = 'pa'
+      ..fields['prompt'] = '$basePrompt$specificPrompt'
       ..files.add(await http.MultipartFile.fromPath('file', wavPath));
 
     final streamed =
@@ -48,9 +58,48 @@ class WhisperSttService {
       throw HttpException('whisper HTTP ${streamed.statusCode}: $body');
     }
 
-    final text = ScriptNormalizer.toShahmukhi(
-        (jsonDecode(body)['text'] as String? ?? '').trim());
-    debugPrint('[stt] whisper transcribed in ${sw.elapsedMilliseconds} ms '
+    final rawText = (jsonDecode(body)['text'] as String? ?? '').trim();
+    
+    // Arabic script range starts at 0x0600.
+    final hasArabicScript = rawText.runes.any((r) => r >= 0x0600 && r <= 0x06FF);
+
+    String text = hasArabicScript ? rawText : ScriptNormalizer.toShahmukhi(rawText);
+
+    // Advanced Punjabi Dialect & Orthography Refinement.
+    final corrections = {
+      ' ہے': ' اے', 
+      ' ہیں': ' نیں', 
+      ' وہ': ' او',   
+      ' کیا': ' کیہ', 
+      'نہیں': ' نئیں',
+      'کیوں': ' کیوں',
+      'کتنا': ' کِنا',
+      'پودا': ' بوٹا',
+      'پودے': ' بوٹے',
+      'کب سے': ' کدوں توں',
+      'سے': ' توں',
+      'بتاؤ': ' دسو',  
+      'دیکھیں': ' دیکھو',
+      'دکھائیں': ' وکھاؤ',
+      'کب': ' کدوں',
+      'کدھر': ' کتھے',
+      'کہاں': ' کتھے',
+      'ادھر': ' ایتھے',
+      'گئی': ' گئی',
+      'ہوگا': ' ہووے گا',
+      'ہوئی': ' ہوئی',
+      'تھا': ' سی',
+      'تھے': ' سن',
+      'یاد': ' چیتے',
+      'پھیل': ' ودھ',
+      'متاثر': ' خراب',
+    };
+    
+    corrections.forEach((urdu, punjabi) {
+      text = text.replaceAll(urdu, punjabi);
+    });
+
+    debugPrint('[stt] whisper transcribed ($questionId) in ${sw.elapsedMilliseconds} ms '
         '-> "$text"');
     return text;
   }

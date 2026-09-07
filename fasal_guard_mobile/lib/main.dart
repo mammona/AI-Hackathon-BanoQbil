@@ -3,15 +3,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'config/app_theme.dart';
+import 'models/farmer_notification.dart';
 import 'models/farmer_report.dart';
 import 'screens/crop_selection_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/image_capture_screen.dart';
 import 'screens/input_selection_screen.dart';
 import 'screens/questions_screen.dart';
+import 'screens/notification_detail_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'screens/report_complete_screen.dart';
 import 'screens/reports_screen.dart';
 import 'screens/welcome_screen.dart';
+import 'services/device_service.dart';
+import 'services/location_service.dart';
+import 'services/notification_cache_service.dart';
 import 'services/upload_queue_service.dart';
 
 Future<void> main() async {
@@ -20,14 +26,33 @@ Future<void> main() async {
   // Groq API key for Whisper speech-to-text (local .env, gitignored).
   await dotenv.load(fileName: '.env');
 
+  // Initialize device ID and notification cache.
+  await DeviceService.instance.init();
+  await NotificationCacheService.instance.init();
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+
+  // Initial device registration (crops are hardcoded for now, or fetched later).
+  // Location capture is best-effort.
+  _registerDevice();
 
   // Offline queue: retry any OSS image uploads left over from last run.
   UploadQueueService.instance.retryPending();
 
   runApp(const FasalGuardApp());
+}
+
+Future<void> _registerDevice() async {
+  try {
+    final loc = await LocationService().capture();
+    await DeviceService.instance.register(
+      crops: ['cotton', 'rice'], // Matching requirement: Cotton / Rice
+      lat: loc.latitude,
+      lon: loc.longitude,
+    );
+  } catch (_) {}
 }
 
 class FasalGuardApp extends StatelessWidget {
@@ -62,6 +87,11 @@ class FasalGuardApp extends StatelessWidget {
       AppRoutes.complete =>
         _route(settings, ReportCompleteScreen(report: args as FarmerReport)),
       AppRoutes.reports => _route(settings, const ReportsScreen()),
+      AppRoutes.notifications => _route(settings, const NotificationsScreen()),
+      AppRoutes.notificationDetail => _route(
+          settings,
+          NotificationDetailScreen(notification: args as FarmerNotification),
+        ),
       _ => null,
     };
   }

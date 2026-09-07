@@ -14,14 +14,21 @@ class RecorderService {
     }
   }
 
-  Future<void> start(String path) => _recorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.wav,
-          sampleRate: 16000,
-          numChannels: 1,
-        ),
-        path: path,
-      );
+  Future<void> start(String path) async {
+    // Ensure any previous session is fully cleaned up.
+    if (await _recorder.isRecording()) {
+      await _recorder.stop();
+    }
+    return _recorder.start(
+      const RecordConfig(
+        encoder: AudioEncoder.wav,
+        sampleRate: 44100, // Higher fidelity to better capture rural accents/nuances
+        bitRate: 128000,   // Clearer signal for Whisper large-v3
+        numChannels: 1,
+      ),
+      path: path,
+    );
+  }
 
   /// Returns the recorded file path, or null when nothing was recorded.
   Future<String?> stop() => _recorder.stop();

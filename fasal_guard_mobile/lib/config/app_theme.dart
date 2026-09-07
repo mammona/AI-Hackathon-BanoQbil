@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Shared app palette (dark green / cream) used by every screen.
 /// Kept in one place so screens stop redeclaring their own constants.
@@ -15,10 +16,19 @@ class AppTheme {
   static const Color danger = Color(0xFFD93B35);
 
   static ThemeData material() {
-    return ThemeData(
+    final baseTheme = ThemeData(
       useMaterial3: true,
-      fontFamily: 'Arial',
       colorScheme: ColorScheme.fromSeed(seedColor: darkGreen),
+    );
+
+    return baseTheme.copyWith(
+      textTheme: GoogleFonts.notoNastaliqUrduTextTheme(baseTheme.textTheme).copyWith(
+        // Force extra height for all text to prevent Urdu dots from clipping.
+        // Increased font size for better readability of Punjabi Shahmukhi.
+        bodyLarge: GoogleFonts.notoNastaliqUrdu(height: 2.0, fontSize: 20),
+        bodyMedium: GoogleFonts.notoNastaliqUrdu(height: 2.0, fontSize: 18),
+        titleLarge: GoogleFonts.notoNastaliqUrdu(height: 2.0, fontWeight: FontWeight.bold, fontSize: 22),
+      ),
     );
   }
 }
@@ -36,4 +46,6 @@ class AppRoutes {
   static const questions = '/questions';
   static const complete = '/complete';
   static const reports = '/reports';
+  static const notifications = '/notifications';
+  static const notificationDetail = '/notifications/detail';
 }

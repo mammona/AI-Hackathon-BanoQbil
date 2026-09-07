@@ -121,4 +121,17 @@ class ReportStorageService {
       debugPrint('[report] deleted $reportId');
     }
   }
+
+  /// Deletes ALL saved reports.
+  Future<void> clearAll() async {
+    final base = await _reportsDir();
+    if (await base.exists()) {
+      await for (final entry in base.list()) {
+        if (entry is Directory) {
+          await entry.delete(recursive: true);
+        }
+      }
+      debugPrint('[report] cleared all reports');
+    }
+  }
 }

@@ -83,7 +83,7 @@ class ScriptNormalizer {
     0x0A47: 'ے', 0x0A48: 'ے', 0x0A4B: 'و', 0x0A4C: 'و',
     0x0A4D: '',
     0x0A70: 'ں', // tippi
-    0x0A71: '', // addak (gemination)
+    0x0A71: 'ّ', // addak -> shadda (gemination)
   };
 
   /// Base consonant + nukta (0x093C / 0x0A3C) pairs, e.g. ख़ -> خ.

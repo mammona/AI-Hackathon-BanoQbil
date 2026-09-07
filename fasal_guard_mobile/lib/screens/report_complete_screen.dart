@@ -51,28 +51,52 @@ class ReportCompleteScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: Color(0xFF3C4A3E)),
                 ),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7E0),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFEAD9A0)),
+                if (report.syncStatus == 'synced')
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3EED0),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFBCD69A)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.cloud_done_rounded,
+                            size: 18, color: AppTheme.darkGreen),
+                        SizedBox(width: 8),
+                        Text(
+                          'رپورٹ سرور نوں کامیابی نال بھیج دتی گئی اے',
+                          style: TextStyle(
+                              fontSize: 13, color: AppTheme.darkGreen),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3F2FD),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFBBDEFB)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.sync_rounded,
+                            size: 18, color: Color(0xFF1976D2)),
+                        SizedBox(width: 8),
+                        Text(
+                          'رپورٹ محفوظ اے، انٹرنیٹ ملدے ہی بھیج دتی جاوے گی',
+                          style: TextStyle(
+                              fontSize: 13, color: Color(0xFF1976D2)),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.cloud_off_rounded,
-                          size: 18, color: Color(0xFF8A6D1A)),
-                      SizedBox(width: 8),
-                      Text(
-                        'جدوں انٹرنیٹ ملے گا تے سرور نوں بھیج دتی جاوے گی',
-                        style: TextStyle(
-                            fontSize: 13, color: Color(0xFF8A6D1A)),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 40),
                 PrimaryButton(
                   icon: Icons.add_rounded,

@@ -55,16 +55,17 @@ class ReportApiService {
       writeField('report_id', report.reportId);
       writeField('device_id', deviceId);
       writeField('selected_crop', report.cropId);
-      writeField('language', 'pa');
+      writeField('language', 'punjabi');
       writeField('timestamp', report.capturedAt.toIso8601String());
 
-      // Answer fields: answer_1 … answer_4.
-      for (var i = 0; i < report.answers.length && i < 4; i++) {
-        final text = report.answers[i].answerText.trim();
-        if (text.isNotEmpty) {
-          writeField('answer_${i + 1}', text);
-        }
-      }
+      // Correctly map the 4 questions to the backend fields by their IDs.
+      // This ensures the report is "correct" even if questions are answered out of order.
+      final answerMap = {for (var a in report.answers) a.questionId: a.answerText};
+      
+      writeField('answer_1', answerMap['symptom_description']?.trim() ?? '');
+      writeField('answer_2', answerMap['symptom_duration']?.trim() ?? '');
+      writeField('answer_3', answerMap['affected_spread']?.trim() ?? '');
+      writeField('answer_4', answerMap['spreading_status']?.trim() ?? '');
 
       // Location.
       final loc = report.location;
@@ -102,10 +103,14 @@ class ReportApiService {
       req.add(payload);
 
       final res = await req.close().timeout(const Duration(seconds: 30));
+      
+      if (res.statusCode >= 400) {
+        final errorBody = await res.transform(utf8.decoder).join();
+        throw HttpException('Server error ${res.statusCode}: $errorBody');
+      }
+      
       await res.drain<void>();
-      debugPrint('[report-api] submit status ${res.statusCode}');
-    } catch (e) {
-      debugPrint('[report-api] submit error: $e');
+      debugPrint('[report-api] submit success: ${res.statusCode}');
     } finally {
       client.close(force: true);
     }

@@ -33,7 +33,6 @@ class DeviceService {
   /// Registers this device with the backend (fire-and-forget).
   Future<void> register({
     required List<String> crops,
-    required String language,
     double? lat,
     double? lon,
     bool notificationsEnabled = true,
@@ -48,10 +47,11 @@ class DeviceService {
         jsonEncode({
           'device_id': deviceId,
           'crops': crops,
-          'preferred_language': language,
+          'preferred_language': 'punjabi',
           'latitude': lat,
           'longitude': lon,
           'notifications_enabled': notificationsEnabled,
+          'push_token': null,
         }),
       );
       final res = await req.close().timeout(const Duration(seconds: 15));
@@ -59,6 +59,28 @@ class DeviceService {
       debugPrint('[device] register status ${res.statusCode}');
     } catch (e) {
       debugPrint('[device] register error: $e');
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  /// Updates the device location on the backend (PUT).
+  Future<void> updateLocation(double lat, double lon) async {
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 10);
+    try {
+      final uri = Uri.parse(ApiConfig.locationUpdateUrl(deviceId));
+      final req = await client.putUrl(uri);
+      req.headers.contentType = ContentType.json;
+      req.write(jsonEncode({
+        'latitude': lat,
+        'longitude': lon,
+      }));
+      final res = await req.close().timeout(const Duration(seconds: 15));
+      await res.drain<void>();
+      debugPrint('[device] location update status ${res.statusCode}');
+    } catch (e) {
+      debugPrint('[device] location update error: $e');
     } finally {
       client.close(force: true);
     }
